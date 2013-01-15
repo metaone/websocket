@@ -13,26 +13,43 @@ use Wrench\Application\NamedApplication;
 
 class Chat extends Application
 {
-    protected $_clients = array();
+    // active connections
+    protected $_connections;
 
-    public function onConnect($client)
+    /**
+     * Construct
+     * @return void
+     */
+    public function __construct()
     {
-        if ($client) {
-            echo PHP_EOL;
-            var_dump($client);
-            echo PHP_EOL;
-            $this->_clients[] = $client;
-        }
+        $this->_connections = new \SplObjectStorage();
+    }
+
+    /**
+     * @param $connection
+     * @return void
+     */
+    public function onConnect($connection)
+    {
+        $this->_connections->attach($connection);
+    }
+
+    /**
+     * @param $connection
+     * @return void
+     */
+    public function onDisconnect($connection)
+    {
+        $this->_connections->detach($connection);
     }
 
     /**
      * @see Wrench\Application.Application::onData()
      */
-    public function onData($data, $client)
+    public function onData($data, $connection)
     {
-        foreach ($this->_clients as $conn) {
+        foreach ($this->_connections as $conn) {
             $conn->send($data);
         }
-        //$client->send($data);
     }
 }

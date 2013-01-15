@@ -10,41 +10,61 @@ namespace WebSocket;
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 
+/**
+ * Chat Class
+ */
 class Chat implements MessageComponentInterface
 {
-    protected $clients;
+    // active connections
+    protected $_connections;
 
+    /**
+     * Constructor
+     * @return void
+     */
     public function __construct()
     {
-        $this->clients = new \SplObjectStorage;
+        $this->_connections = new \SplObjectStorage;
     }
 
+    /**
+     * @param \Ratchet\ConnectionInterface $conn
+     * @return void
+     */
     public function onOpen(ConnectionInterface $conn)
     {
-        // Store the new connection to send messages to later
-        $this->clients->attach($conn);
+        $this->_connections->attach($conn);
     }
 
+    /**
+     * @param \Ratchet\ConnectionInterface $from
+     * @param $msg
+     * @return void
+     */
     public function onMessage(ConnectionInterface $from, $msg)
     {
-        foreach ($this->clients as $client) {
-            if ($from !== $client) {
-                // The sender is not the receiver, send to each client connected
-                $client->send($msg);
-            }
+        foreach ($this->_connections as $client) {
+            $client->send($msg);
         }
     }
 
+    /**
+     * @param \Ratchet\ConnectionInterface $conn
+     * @return void
+     */
     public function onClose(ConnectionInterface $conn)
     {
-        // The connection is closed, remove it, as we can no longer send it messages
-        $this->clients->detach($conn);
+        $this->_connections->detach($conn);
     }
 
+    /**
+     * @param \Ratchet\ConnectionInterface $conn
+     * @param \Exception $e
+     * @return void
+     */
     public function onError(ConnectionInterface $conn, \Exception $e)
     {
         echo "An error has occurred: {$e->getMessage()}\n";
-
         $conn->close();
     }
 }
