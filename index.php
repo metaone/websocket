@@ -23,24 +23,9 @@
             <div class="accordion" id="accordion2">
                 <div class="accordion-group">
                     <div class="accordion-heading">
-                        <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">Wrench</a>
-                    </div>
-                    <div id="collapseOne" class="accordion-body collapse in">
-                        <div class="accordion-inner">
-                            <div id="wrench-container">
-                                <span id="wrench-success" class="text-success hide">connection success</span>
-                                <span id="wrench-error" class="text-error">connection error</span>
-                                <div id="wrench-message-box" class="div-textarea"></div>
-                                <div><input id="wrench-message" type="text" placeholder="Type here..." class="span12"/></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="accordion-group">
-                    <div class="accordion-heading">
                         <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">Ratchet</a>
                     </div>
-                    <div id="collapseTwo" class="accordion-body collapse">
+                    <div id="collapseTwo" class="accordion-body collapse in">
                         <div class="accordion-inner">
                             <div id="ratchet-container">
                                 <span id="ratchet-success" class="text-success hide">connection success</span>

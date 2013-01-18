@@ -7,22 +7,7 @@
  */
 
 $(document).ready(function() {
-    var wrench = new WebSocket('ws://192.168.98.102:8000/chat');
-    wrench.onopen = function(e) {
-        $('#wrench-success').removeClass('hide');
-        $('#wrench-error').addClass('hide');
-    };
-    wrench.onmessage = function(e) {
-        $('#wrench-message-box').append('<p>' + JSON.parse(e.data) + '</p>');
-    };
-    $('#wrench-message').keypress(function(e) {
-        if(e.which == 13) {
-            wrench.send(JSON.stringify($('#wrench-message').val()));
-            $('#wrench-message').val('').blur();
-        }
-    });
-
-    var ratchet = new WebSocket('ws://192.168.98.102:8080');
+    ratchet = new WebSocket('ws://192.168.56.107:8000');
     ratchet.onopen = function(e) {
         $('#ratchet-success').removeClass('hide');
         $('#ratchet-error').addClass('hide');
@@ -33,6 +18,7 @@ $(document).ready(function() {
 
     $('#ratchet-message').keypress(function(e) {
         if(e.which == 13) {
+            console.log($('#ratchet-message').val());
             ratchet.send($('#ratchet-message').val());
             $('#ratchet-message').val('').blur();
         }

@@ -17,11 +17,8 @@ class Chat implements MessageComponentInterface
 {
     // active connections
     protected $_connections;
+    protected $_games;
 
-    /**
-     * Constructor
-     * @return void
-     */
     public function __construct()
     {
         $this->_connections = new \SplObjectStorage;
@@ -33,6 +30,7 @@ class Chat implements MessageComponentInterface
      */
     public function onOpen(ConnectionInterface $conn)
     {
+        var_dump('add connection\n');
         $this->_connections->attach($conn);
     }
 
@@ -44,6 +42,7 @@ class Chat implements MessageComponentInterface
     public function onMessage(ConnectionInterface $from, $msg)
     {
         foreach ($this->_connections as $client) {
+            var_dump($msg);
             $client->send($msg);
         }
     }
