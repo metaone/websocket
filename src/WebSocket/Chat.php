@@ -19,6 +19,11 @@ class Chat implements MessageComponentInterface
     protected $_connections;
     protected $_games;
 
+    protected $_actions = array(
+        'login',
+        'message',
+    );
+
     public function __construct()
     {
         $this->_connections = new \SplObjectStorage;
@@ -30,7 +35,6 @@ class Chat implements MessageComponentInterface
      */
     public function onOpen(ConnectionInterface $conn)
     {
-        var_dump('add connection\n');
         $this->_connections->attach($conn);
     }
 
@@ -41,9 +45,9 @@ class Chat implements MessageComponentInterface
      */
     public function onMessage(ConnectionInterface $from, $msg)
     {
-        foreach ($this->_connections as $client) {
-            var_dump($msg);
-            $client->send($msg);
+        $response = json_decode($msg);
+        if (in_array($response->action, $this->_actions)) {
+            $this->{$response->action}($from, $response->params);
         }
     }
 
@@ -65,5 +69,21 @@ class Chat implements MessageComponentInterface
     {
         echo "An error has occurred: {$e->getMessage()}\n";
         $conn->close();
+    }
+
+
+    public function login(ConnectionInterface $conn, $params)
+    {
+        $conn->Session->set('name', $params->name);
+        foreach($this->_connections as $client) {
+            $client->send(json_encode('<b>' . $params->name . '</b> appears online.'));
+        }
+    }
+
+    public function message(ConnectionInterface $conn, $params)
+    {
+        foreach($this->_connections as $client) {
+            $client->send(json_encode('<b>' .$conn->Session->get('name') . ':</b> ' . $params->text));
+        }
     }
 }

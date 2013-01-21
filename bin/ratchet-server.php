@@ -9,14 +9,19 @@
 use Ratchet\Server\IoServer;
 use Ratchet\WebSocket\WsServer;
 use WebSocket\Chat;
+use Ratchet\Session\SessionProvider;
+use Symfony\Component\HttpFoundation\Session\Storage\Handler;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
-$server = IoServer::factory(
-    new WsServer(
-        new Chat()
-    )
-    ,8000
+$memcache = new Memcache();
+$memcache->connect('localhost', 11211);
+
+$session = new SessionProvider(
+    new Chat(),
+    new Handler\MemcacheSessionHandler($memcache)
 );
 
+// Make sure to run as root
+$server = IoServer::factory(new WsServer($session), 8000);
 $server->run();
