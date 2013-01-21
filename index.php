@@ -8,8 +8,9 @@
 
     <script src="assets/js/jquery-1.8.3.min.js"></script>
     <script src="assets/js/bootstrap.min.js"></script>
-    <script src="assets/js/config.js"></script>
-    <script src="assets/js/websocket.js"></script>
+
+    <script src="assets/js/websocket/config.js"></script>
+    <script src="assets/js/websocket/main.js"></script>
 </head>
 
 <body>

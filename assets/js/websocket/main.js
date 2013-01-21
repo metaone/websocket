@@ -1,8 +1,8 @@
 /**
  * Created with JetBrains PhpStorm.
  * User: Mykola_Skorenkyi
- * Date: 1/15/13
- * Time: 1:52 PM
+ * Date: 1/21/13
+ * Time: 1:10 PM
  * To change this template use File | Settings | File Templates.
  */
 
@@ -22,10 +22,8 @@ $(document).ready(function() {
 
     $('#ratchet-message').keypress(function(e) {
         if(e.which == 13) {
-            console.log($('#ratchet-message').val());
             ratchet.send($('#ratchet-message').val());
             $('#ratchet-message').val('').blur();
         }
     });
 });
-
