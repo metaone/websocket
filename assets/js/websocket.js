@@ -7,7 +7,11 @@
  */
 
 $(document).ready(function() {
-    ratchet = new WebSocket('ws://192.168.56.107:8000');
+    if (typeof window.config.socket == 'undefined') {
+        throw 'App error: No socket configured!';
+    }
+
+    var ratchet = new WebSocket(window.config.socket);
     ratchet.onopen = function(e) {
         $('#ratchet-success').removeClass('hide');
         $('#ratchet-error').addClass('hide');

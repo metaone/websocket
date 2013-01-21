@@ -2,13 +2,14 @@
 <html>
 <head>
     <title>PHP WebSocket Example</title>
-    <script src="http://autobahn.s3.amazonaws.com/js/autobahn.min.js"></script>
-    <script src="assets/js/when/when.js"></script>
-    <script src="assets/js/jquery-1.8.3.min.js"></script>
-    <script src="assets/js/bootstrap.min.js"></script>
-    <script src="assets/js/websocket.js"></script>
+
     <link href="assets/css/bootstrap.min.css" rel="stylesheet" media="screen">
     <link href="assets/css/websocket.css" rel="stylesheet" media="screen">
+
+    <script src="assets/js/jquery-1.8.3.min.js"></script>
+    <script src="assets/js/bootstrap.min.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/websocket.js"></script>
 </head>
 
 <body>
