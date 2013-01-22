@@ -18,3 +18,11 @@
     float: none;
     width: auto;
 }
+
+#open-games {
+    margin-bottom: 5px;
+}
+
+.join {
+    margin-right: 2px;
+}

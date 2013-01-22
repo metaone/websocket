@@ -8,7 +8,7 @@
  */
 use Ratchet\Server\IoServer;
 use Ratchet\WebSocket\WsServer;
-use WebSocket\Chat;
+use WebSocket\Bomberman;
 use Ratchet\Session\SessionProvider;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler;
 
@@ -18,7 +18,7 @@ $memcache = new Memcache();
 $memcache->connect('localhost', 11211);
 
 $session = new SessionProvider(
-    new Chat(),
+    new Bomberman(),
     new Handler\MemcacheSessionHandler($memcache)
 );
 

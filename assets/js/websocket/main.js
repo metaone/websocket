@@ -6,126 +6,147 @@
  * To change this template use File | Settings | File Templates.
  */
 
-$(document).ready(function() {
-    if (typeof window.config.socket == 'undefined') {
-        throw 'App error: No socket configured!';
-    }
-
-    // init socket
-    var socket = new WebSocket(window.config.socket);
-    socket.onopen = function(e) {
-        $('#ratchet-success').removeClass('hide');
-        $('#ratchet-error').addClass('hide');
-    };
-    socket.onmessage = function(e) {
-        $('#ratchet-message-box').append('<p>' + JSON.parse(e.data)  + '</p>');
-    };
-
-    $('#ratchet-message').keypress(function(e) {
-        if(e.which == 13) {
-            socket.send(
-                JSON.stringify(
-                    {
-                        action: 'message',
-                        params: {
-                            text: $('#ratchet-message').val()
-                        }
-                    }
-                )
-            );
-            $('#ratchet-message').val('').blur();
-        }
-    });
-
-
-    // login part
-    $('#register-name').keypress(function(key) {
-        var input = $('#register-name');
-        if (key.keyCode == 13) {
-            if (input.val().length > 0) {
-                socket.send(
-                    JSON.stringify(
-                        {
-                            action: 'login',
-                            params: {
-                                name: input.val()
-                            }
-                        }
-                    )
-                );
-                $('.register').hide();
-                $('.content').show();
-            }
-        }
-    });
-
-    // canvas
-    var c = document.getElementById("canvas");
-    var canvas = c.getContext("2d");
+var gameObject = function(params) {
+    var self = this;
 
     var field = {
         width: 800,
         height:480
     }
 
-    // player
-    var player = {
-        speed: 32,
-        x: 0,
-        y: 0,
-        width: 32,
-        height: 32
-    }
-
-    var playerImage = new Image();
-    playerImage.onload = function () {
-        playerRender();
+    var players = {
+        0: {
+            speed: 32,
+            x: 0,
+            y: 0,
+            width: 32,
+            height: 32
+        },
+        1: {
+            speed: 32,
+            x: field.width - 32,
+            y: field.height - 32,
+            width: 32,
+            height: 32
+        }
     };
-    playerImage.src = "http://websocket.local/assets/img/player.png";
 
 
-    window.playerRender = function() {
-        canvas.clearRect(0, 0, field.width, field.height);
-        canvas.fillStyle="#333333";
-        canvas.fillRect(0, 0, field.width, field.height);
-        canvas.drawImage(playerImage, player.x, player.y);
+
+    var playerNumber = false;
+
+    this.setPlayer = function (number) {
+        playerNumber = number;
+        return this;
     }
 
-    $('body').keypress(function(key) {
+    var socket = false;
+    this.setSocket = function (sock) {
+        socket = sock;
+        return this;
+    }
+
+    // canvas
+    var canvas = document.getElementById("canvas").getContext("2d");
+
+    this.render = function() {
+        canvas.clearRect(0, 0, field.width, field.height);
+        canvas.fillStyle = "#333333";
+        canvas.fillRect(0, 0, field.width, field.height);
+        canvas.drawImage(self.playerImage, players[0].x, players[0].y)
+        canvas.drawImage(self.player1Image, players[1].x, players[1].y);
+    };
+
+
+    var load = function() {
+        var player = false;
+        var player1 = false;
+        this.playerReady = function() {
+            player = true;
+            return this;
+        };
+        this.player1Ready = function() {
+            player1 = true;
+            return this;
+        }
+        this.init = function() {
+            if (player && player1) {
+                $('body').keypress(keysBind);
+                self.render();
+            }
+        };
+    }
+
+
+    this.init = function() {
+        var loader = new load();
+
+        self.playerImage = new Image();
+        self.playerImage.onload = function () {
+            loader.playerReady().init();
+        };
+        self.playerImage.src = "assets/img/player.png";
+
+        self.player1Image = new Image();
+        self.player1Image.onload = function () {
+            loader.player1Ready().init();
+        };
+        self.player1Image.src = "assets/img/monster.png";
+    }
+
+    var keysBind = function(key) {
         switch (key.keyCode) {
             case 37: //left
                 key.preventDefault();
-                if (player.x < player.width) {
-                    player.x = 0;
+                if (players[playerNumber].x < players[playerNumber].width) {
+                    players[playerNumber].x = 0;
                 } else {
-                    player.x -= player.speed;
+                    players[playerNumber].x -= players[playerNumber].speed;
                 }
                 break;
             case 38: //up
                 key.preventDefault();
-                if (player.y < player.height) {
-                    player.y = 0;
+                if (players[playerNumber].y < players[playerNumber].height) {
+                    players[playerNumber].y = 0;
                 } else {
-                    player.y -= player.speed;
+                    players[playerNumber].y -= players[playerNumber].speed;
                 }
                 break;
             case 39: //right
                 key.preventDefault();
-                if (field.width - player.x <= player.width) {
-                    player.x = field.width - player.width;
+                if (field.width - players[playerNumber].x <= players[playerNumber].width) {
+                    players[playerNumber].x = field.width - players[playerNumber].width;
                 } else {
-                    player.x += player.speed;
+                    players[playerNumber].x += players[playerNumber].speed;
                 }
-                //console.log(player.x);
                 break;
             case 40: //down;
                 key.preventDefault();
-                if (field.height - player.y <= player.height) {
-                    player.y = field.height - player.height;
+                if (field.height - players[playerNumber].y <= players[playerNumber].height) {
+                    players[playerNumber].y = field.height - players[playerNumber].height;
                 } else {
-                    player.y += player.speed;
+                    players[playerNumber].y += players[playerNumber].speed;
                 }
         }
-        playerRender();
-    });
-});
+        socket.send(
+            JSON.stringify(
+                {
+                    action: 'render',
+                    params: {
+                        player: {
+                            x: players[playerNumber].x,
+                            y: players[playerNumber].y
+                        }
+                    }
+                }
+            )
+        );
+        self.render();
+    };
+
+    this.update = function(params) {
+        players[playerNumber].x = params.x;
+        players[playerNumber].y = params.y;
+        self.render();
+    }
+};
