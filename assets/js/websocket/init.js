@@ -29,18 +29,14 @@ $(document).ready(function() {
                 '<a id="' + response.params.name + '-game" href="javascript:void(0);" class="btn btn-primary join">' + response.params.name + '</a>'
             );
         } else if(response.action == 'join') {
-
+            game.start();
         } else if(response.action == 'cancel') {
             console.log(response.action);
             $('#open-games').find('#' + response.params.name + '-game').remove();
         } else if(response.action == 'render') {
-            //console.log(response);
             if (typeof response.params.player !== 'undefined') {
-                /*player.x = response.params.player.x;
-                player.y = response.params.player.y;*/
                 game.update(response.params.player);
             }
-            //game.render();
         }
     };
 
@@ -103,6 +99,7 @@ $(document).ready(function() {
                     }
                 )
             );
+            game.setPlayer(0);
             $this.removeClass('create').addClass('cancel').html('Cancel');
         } else if($this.hasClass('cancel')) {
             socket.send(
@@ -131,6 +128,7 @@ $(document).ready(function() {
                 }
             )
         );
+        game.setPlayer(1);
 
     });
 });

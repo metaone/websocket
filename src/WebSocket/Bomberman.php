@@ -90,6 +90,7 @@ class Bomberman implements MessageComponentInterface
     {
         $game = substr($params->game, 0, strlen($params->game) - 5);
         $this->_games[$game][] = $conn;
+        $this->_sendResponse('join', array());
 
     }
 

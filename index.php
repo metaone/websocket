@@ -18,7 +18,7 @@
 <div class="container-fluid">
     <div class="row-fluid">
         <div class="span12">
-            <div class="hero-unit">
+            <div class="popover-title">
                 <h1>WebSockets and PHP</h1>
                 <p>This is small example of using WebSockets in PHP specially for <a href="https://docs.google.com/presentation/d/1x5b7sIUrNQeV03J7C6p_Xb_dA5pwGsQsSqvNsd1VAzg/edit?pli=1#slide=id.p" target="_blank">presentation</a>.</p>
             </div>
