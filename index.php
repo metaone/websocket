@@ -9,9 +9,13 @@
     <script src="assets/js/jquery-1.8.3.min.js"></script>
     <script src="assets/js/bootstrap.min.js"></script>
 
-    <script src="assets/js/websocket/config.js"></script>
-    <script src="assets/js/websocket/main.js"></script>
-    <script src="assets/js/websocket/init.js"></script>
+    <script src="assets/js/bomberman/config.js"></script>
+    <script src="assets/js/bomberman/objects/BaseRender.js"></script>
+    <script src="assets/js/bomberman/objects/PlayerRender.js"></script>
+    <script src="assets/js/bomberman/objects/Cell.js"></script>
+    <script src="assets/js/bomberman/objects/FieldRender.js"></script>
+    <script src="assets/js/bomberman/objects/Bomberman.js"></script>
+    <script src="assets/js/bomberman/init.js"></script>
 </head>
 
 <body>
@@ -41,7 +45,7 @@
                         <a id="create-game" href="javascript:void(0);" class="btn btn-primary create">Create</a>
                         <hr/>
                     </div>
-                    <canvas id="canvas" width="800" height="480">
+                    <canvas id="canvas">
                         Your browser does not support the HTML5 canvas tag.
                     </canvas>
                     <div id="chat">

@@ -78,6 +78,11 @@ class Bomberman implements MessageComponentInterface
         $conn->close();
     }
 
+    private function _generateField()
+    {
+        return array();
+    }
+
     public function create(ConnectionInterface $conn, $params)
     {
         $creator = $conn->Session->get('name');

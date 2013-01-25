@@ -11,9 +11,11 @@ $(document).ready(function() {
     if (typeof window.config == 'undefined' || typeof window.config.socket == 'undefined') {
         window.config = {socket: 'ws://127.0.0.0:8000'};
     }
+
     // init socket
     var socket = new WebSocket(window.config.socket);
-    socket.onopen = function(e) {
+
+    socket.onopen = function() {
         $('#ratchet-success').removeClass('hide');
         $('#ratchet-error').addClass('hide');
     };
@@ -40,10 +42,13 @@ $(document).ready(function() {
         }
     };
 
-    var game = new gameObject({});
-    game.setSocket(socket).setPlayer(0).init();
-
-
+    var game = new Bomberman(
+        {
+            socket: socket,
+            width: 800,
+            height: 800
+        }
+    ).init();
 
 
 

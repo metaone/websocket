@@ -24,4 +24,10 @@ $session = new SessionProvider(
 
 // Make sure to run as root
 $server = IoServer::factory(new WsServer($session), 8000);
+
+/*$server = IoServer::factory(
+    new WsServer(new Bomberman())
+    , 8080
+);*/
+
 $server->run();
