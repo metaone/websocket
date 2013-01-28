@@ -7,15 +7,14 @@
  */
 
 var FieldRender = function(config) {
+    Base.apply(this, arguments);
+
     var self = this;
 
-    try {
-        var width = config.width;
-        var height = config.height;
-        var canvas = config.canvas;
-    } catch (e) {
-        console.log('FieldRender initialization error: ' + e);
-    }
+    this.width = this.clearParam('width');
+    this.height = this.clearParam('height');
+    this.canvas = this.clearParam('canvas');
+
 
     this.isEven = function(n) {
         return n % 2 == 0;
@@ -30,7 +29,7 @@ var FieldRender = function(config) {
     var maxJ = 24;
 
 
-    var matrix = [];
+    /*var matrix = [];
     for (var i = 0; i <= maxI; i++) {
         matrix[i] = [];
         for (var j = 0; j <= maxJ; j++) {
@@ -45,53 +44,107 @@ var FieldRender = function(config) {
                 }
             }
         }
-    }
+    }*/
+    var matrix = [
+        [new Cell({}), new Cell({}), new Cell({}), new Cell({type: 'brick', bonus: 'speedBonus'}), new Cell({type: 'brick', bonus: 'fireBonus'}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({})],
+        [new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({})],
+        [new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({})],
+        [new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({})],
+        [new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({})],
+        [new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({})],
+        [new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({})],
+        [new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({})],
+        [new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({})],
+        [new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({})],
+        [new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({})],
+        [new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({})],
+        [new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({})],
+        [new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({})],
+        [new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({})],
+        [new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({})],
+        [new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({})],
+        [new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({})],
+        [new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({})],
+        [new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({})],
+        [new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({})],
+        [new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({})],
+        [new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({})],
+        [new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({})],
+        [new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({})]
+    ];
 
     var wall = new BaseRender(
         {
             sprite: 'assets/img/wall.png',
-            canvas: canvas,
+            canvas: this.canvas,
             initCallback: function(){}
         }
     );
     var brick = new BaseRender(
         {
             sprite: 'assets/img/brick.png',
-            canvas: canvas,
+            canvas: this.canvas,
             initCallback: function(){}
         }
     );
-    var bomb = new BaseRender(
+    var fire = new BaseRender(
         {
-            sprite: 'assets/img/bomb.png',
-            canvas: canvas,
+            sprite: 'assets/img/fire.png',
+            canvas: this.canvas,
             initCallback: function(){}
         }
     );
+    var bombBonus = new BaseRender(
+        {
+            sprite: 'assets/img/bomb-bonus.gif',
+            canvas: this.canvas,
+            initCallback: function(){}
+        }
+    );
+    var speedBonus = new BaseRender(
+        {
+            sprite: 'assets/img/speed-bonus.gif',
+            canvas: this.canvas,
+            initCallback: function(){}
+        }
+    );
+    var fireBonus = new BaseRender(
+        {
+            sprite: 'assets/img/fire-bonus.gif',
+            canvas: this.canvas,
+            initCallback: function(){}
+        }
+    );
+
 
 
     this.init = function() {
         wall.init();
         brick.init();
+        fire.init();
+
+        bombBonus.init();
+        speedBonus.init();
+        fireBonus.init();
 
         return self;
     };
 
     this.render = function() {
-        canvas.clearRect(0, 0, width, height);
-        canvas.fillStyle = "#333333";
-        canvas.fillRect(0, 0, width, height);
+        this.canvas.clearRect(0, 0, this.width, this.height);
+        this.canvas.fillStyle = "#333333";
+        this.canvas.fillRect(0, 0, this.width, this.height);
 
 
         for (var i = 0; i <= maxI; i++) {
             for (var j = 0; j <= maxJ; j++) {
-                if (matrix[i][j]) {
-                    var cell = matrix[i][j].getType();
+                var cell = matrix[i][j].getType();
 
-                    if (cell) {
-                        //console.log(eval(cell).setX(i));
-                        eval(cell).setX(i).setY(j).render();
-                    }
+                if (cell) {
+                    var obj = eval(cell);
+                    obj.x = i;
+                    obj.y = j;
+                    obj.render();
                 }
             }
         }
@@ -101,19 +154,77 @@ var FieldRender = function(config) {
         return matrix[x][y].access();
     };
 
-    this.setWidth = function(value) {
-        width = value;
-        return self;
-    };
-    this.setHeight = function(value) {
-        height = value;
-        return self;
-    };
-    this.getWidth = function() {
-        return width;
-    };
-    this.getHeight = function() {
-        return height;
+    this.explosion = function(x, y, fireLength, render) {
+        var fires = [
+            {
+                x: x,
+                y: y
+            }
+        ];
+        matrix[x][y].setFire();
+
+        for (var i = 1; i < fireLength; i++) {
+            if ((x + i) <= maxI && matrix[x + i][y].setFire()) {
+                fires.push(
+                    {
+                        x: x + i,
+                        y: y
+                    }
+                );
+            } else {
+                break;
+            }
+        }
+
+        for (var i = 1; i < fireLength; i++) {
+            if ((x - i) >= 0 && matrix[x - i][y].setFire()) {
+                fires.push(
+                    {
+                        x: x - i,
+                        y: y
+                    }
+                );
+            } else {
+                break;
+            }
+        }
+
+        for (var i = 1; i < fireLength; i++) {
+            if ((y + i) <= maxJ && matrix[x][y + i].setFire()) {
+                fires.push(
+                    {
+                        x: x,
+                        y: y + i
+                    }
+                );
+            } else {
+                break;
+            }
+        }
+
+        for (var i = 1; i < fireLength; i++) {
+            if ((y - i) >= 0 && matrix[x][y - i].setFire()) {
+                fires.push(
+                    {
+                        x: x,
+                        y: y - i
+                    }
+                );
+            } else {
+                break;
+            }
+        }
+
+        setTimeout(
+            function() {
+                for (var i = 0; i < fires.length; i++) {
+                    matrix[fires[i].x][fires[i].y].removeFire();
+                }
+                render();
+            },
+            500
+        );
     };
 
 };
+FieldRender.prototype = Object.create(Base.prototype);

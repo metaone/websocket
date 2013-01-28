@@ -9,8 +9,8 @@
 var Cell = function(config) {
     var self = this;
 
-    var types = ['wall', 'brick'];
-    var bonuses = ['bomb', 'speed'];
+    var types = ['wall', 'brick', 'fire', 'bombBonus', 'speedBonus', 'fireBonus'];
+    var bonuses = ['bombBonus', 'speedBonus', 'fireBonus'];
 
     try {
         var type = false;
@@ -38,6 +38,24 @@ var Cell = function(config) {
             type = bonus ? bonus : false;
         }
         return self;
+    };
+
+    this.setFire = function() {
+        if (type !== 'wall') {
+            type = 'fire';
+            return true;
+        } else {
+            return false;
+        }
+    };
+    this.removeFire = function() {
+        if (bonus) {
+            type = bonus;
+            return true;
+        } else {
+            type = false;
+            return false;
+        }
     };
 
     this.access = function() {

@@ -10,6 +10,7 @@
     <script src="assets/js/bootstrap.min.js"></script>
 
     <script src="assets/js/bomberman/config.js"></script>
+    <script src="assets/js/bomberman/objects/Base.js"></script>
     <script src="assets/js/bomberman/objects/BaseRender.js"></script>
     <script src="assets/js/bomberman/objects/PlayerRender.js"></script>
     <script src="assets/js/bomberman/objects/Cell.js"></script>

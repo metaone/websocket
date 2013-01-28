@@ -73,6 +73,7 @@ var Bomberman = function(config) {
 
     this.render = function() {
         field.render();
+        //console.log(opponent);
         opponent.render();
         player.render();
 
@@ -109,15 +110,17 @@ var Bomberman = function(config) {
     }
 
     this.start = function() {
-        $('body').keypress(keysBind);
+        $('body').keydown(keysBind);
         self.render();
 
         return self;
     };
 
     this.update = function(params) {
-        opponent.setX(params.x);
-        opponent.setY(params.y);
+        opponent.x = params.x;
+        opponent.y = params.y;
+        console.log(params);
+        opponent.bombs = params.bombs;
         self.render();
 
         return self;
@@ -129,53 +132,71 @@ var Bomberman = function(config) {
         switch (keyCode) {
             case 37: //left
                 key.preventDefault();
-                if (player.getX() > 0 && field.access(player.getX() - 1, player.getY())) {
-                    player.setX(player.getX() - 1);
+                if (player.x > 0 && field.access(player.x - 1, player.y)) {
+                    player.x -= 1;
                     changed = true;
                 }
                 break;
             case 38: //up
                 key.preventDefault();
-                if (player.getY() > 0 && field.access(player.getX(), player.getY() -1)) {
-                    player.setY(player.getY() - 1);
+                if (player.y > 0 && field.access(player.x, player.y -1)) {
+                    player.y -= 1;
                     changed = true;
                 }
                 break;
             case 39: //right
                 key.preventDefault();
-                if (player.getX() < 24 && field.access(player.getX() + 1, player.getY())) {
-                    player.setX(player.getX() + 1);
+                if (player.x < 24 && field.access(player.x + 1, player.y)) {
+                    player.x += 1;
                     changed = true;
                 }
                 break;
             case 40: //down;
                 key.preventDefault();
-                if (player.getY() < 24 && field.access(player.getX(), player.getY() + 1)) {
-                    player.setY(player.getY() + 1);
+                if (player.y < 24 && field.access(player.x, player.y + 1)) {
+                    player.y += 1;
                     changed = true;
                 }
                 break;
             case 32: //space
                 key.preventDefault();
-                console.log('space');
+                var bombX = player.x;
+                var bombY = player.y;
+                if (player.addBomb(player.x, player.y)) {
+                    setTimeout(
+                        function() {
+                            console.log('remove: ' + player.x + ':' + player.y);
+                            player.removeBomb(bombX, bombY);
+                            field.explosion(bombX, bombY, player.fire, self.fireEvent);
+                            self.fireEvent();
+                        },
+                        1500
+                    );
+                    changed = true;
+                }
                 break;
         }
 
         if (changed) {
-            socket.send(
-                JSON.stringify(
-                    {
-                        action: 'render',
-                        params: {
-                            player: {
-                                x: player.getX(),
-                                y: player.getY()
-                            }
+            self.fireEvent();
+        }
+    };
+
+    this.fireEvent = function() {
+        socket.send(
+            JSON.stringify(
+                {
+                    action: 'render',
+                    params: {
+                        player: {
+                            x: player.x,
+                            y: player.y,
+                            bombs: player.bombs
                         }
                     }
-                )
-            );
-            self.render();
-        }
+                }
+            )
+        );
+        self.render();
     };
 };

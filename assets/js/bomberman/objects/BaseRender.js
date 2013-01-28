@@ -16,67 +16,34 @@
  *     initCallback: function(){}
  * }
  */
-(function(parent) {
-    var
-    //self,
-    //image,
-        cellSize = 32,
-        x,
-        y,
-        sprite,
-        canvas,
-        initCallback;
 
-    var BaseRender = function(config) {
-        var self = this;
-        var image;
+var BaseRender = function(config) {
+    Base.apply(this, arguments);
 
-        this.test = 1;
-        console.log(config.sprite);
-        try {
-            x = (typeof config.x === 'undefined') ? 0 : config.x;
-            y = (typeof config.y === 'undefined') ? 0 : config.y;
-            sprite = config.sprite;
-            canvas = config.canvas;
-            initCallback = config.initCallback;
-        } catch (e) {
-            console.log('BaseRender initialization error: ' + e);
+    var self = this;
+
+    this.image = false;
+
+    this.x = this.clearParam('x', 0);
+    this.cellSize = this.clearParam('cellSize', 32);
+    this.y = this.clearParam('y', 0);
+    this.sprite = this.clearParam('sprite');
+    this.canvas = this.clearParam('canvas');
+    this.initCallback = this.clearParam('initCallback');
+
+    this.init = function() {
+        this.image = new Image();
+        if (typeof this.initCallback === 'function') {
+            this.image.onload = this.initCallback;
         }
-    };
-
-    BaseRender.prototype.getX = function() {
-        return x;
-    };
-    BaseRender.prototype.getY = function() {
-        return y;
-    };
-    BaseRender.prototype.setX = function(value) {
-        x = value;
-        console.log(BaseRender.self);
-        console.log(this.test);
-        return BaseRender.self;
-    };
-    BaseRender.prototype.setY = function(value) {
-        y = value;
-        return BaseRender.self;
-    };
-
-    BaseRender.prototype.init = function() {
-        image = new Image();
-        if (typeof initCallback === 'function') {
-            image.onload = initCallback;
-        }
-        image.src = sprite;
+        this.image.src = this.sprite;
         return self;
     };
 
-    BaseRender.prototype.getImage = function() {
-        return image;
-    }
-    BaseRender.prototype.render = function() {
-        canvas.drawImage(image, x * cellSize, y * cellSize);
+    this.render = function() {
+        this.canvas.drawImage(this.image, this.x * this.cellSize, this.y * this.cellSize);
         return self;
     }
 
-    parent.BaseRender = BaseRender;
-})(window)
+};
+BaseRender.prototype = Object.create(Base.prototype);

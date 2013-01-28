@@ -8,58 +8,69 @@
 
 var PlayerRender = function(config) {
     BaseRender.apply(this, arguments);
-    //console.log(this);
 
     var self = this;
-    var bombs = [];
-    var bombCount = 2;
 
-    try {
-        var speed = config.speed;
-        var width = config.width;
-        var height = config.height;
-    } catch (e) {
-        console.log('PlayerRender initialization error: ' + e);
-    }
+    this.bombs = [];
+    this.bombCount = 3;
+    this.fire = 3;
+
+    var bomb = new BaseRender(
+        {
+            sprite: 'assets/img/bomb.png',
+            canvas: this.canvas,
+            initCallback: function(){}
+        }
+    );
+
+    this.speed = this.clearParam('speed');
+    this.width = this.clearParam('width');
+    this.height = this.clearParam('height');
+
+    this.init = function() {
+        bomb.init();
+
+        this.image = new Image();
+        if (typeof this.initCallback === 'function') {
+            this.image.onload = this.initCallback;
+        }
+        this.image.src = this.sprite;
+        return self;
+    };
 
     this.render = function() {
-        BaseRender.prototype.render.call(this, arguments);
-    };
-
-    this.setBombIncrement = function() {
-        bombCount++;
-    };
-    this.setBomb = function() {
-        if (bombs.length < bombCount) {
-
+        for(var i = 0; i < this.bombs.length; i++) {
+            bomb.x = this.bombs[i].x;
+            bomb.y = this.bombs[i].y;
+            bomb.render();
         }
+        this.canvas.drawImage(this.image, this.x * this.cellSize, this.y * this.cellSize);
+        return self;
     };
 
-    this.getSpeed = function() {
-        return speed;
-    }
-    this.getWidth = function() {
-        return width;
-    };
-    this.getHeight = function() {
-        return height;
+    this.addBomb = function(x, y) {
+        var count = this.bombs.length;
+        if (this.bombs.length < this.bombCount) {
+            this.bombs[count] = {
+                x: x,
+                y: y
+            };
+            return true;
+        }
+        return false;
     };
 
-    this.setSpeed = function(value) {
-        speed = value;
-        return this;
-    }
-    this.setWidth = function(value) {
-        width = value;
-        return this;
+    this.removeBomb = function(x, y) {
+        console.log(this.bombs);
+        for(var i = 0; i < this.bombs.length; i++) {
+            if (this.bombs[i].x == x && this.bombs[i].y == y) {
+                this.bombs.splice(i, 1);
+                break;
+            }
+        }
+        return self;
     };
-    this.setHeight = function(value) {
-        height = value;
-        return this;
-    };
+
+
 };
 PlayerRender.prototype = Object.create(BaseRender.prototype);
-/*PlayerRender.prototype.render = function() {
-    BaseRender.prototype.render.call(this);
-    console.log('render');
-};*/
