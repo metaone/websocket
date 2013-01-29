@@ -33,11 +33,10 @@ $(document).ready(function() {
         } else if(response.action == 'join') {
             game.start();
         } else if(response.action == 'cancel') {
-            console.log(response.action);
             $('#open-games').find('#' + response.params.name + '-game').remove();
         } else if(response.action == 'render') {
-            if (typeof response.params.player !== 'undefined') {
-                game.update(response.params.player);
+            if (typeof response.params !== 'undefined') {
+                game.update(response.params);
             }
         }
     };

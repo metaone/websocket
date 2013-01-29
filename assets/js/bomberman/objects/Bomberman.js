@@ -7,24 +7,22 @@
  */
 
 var Bomberman = function(config) {
+    Base.apply(this, arguments);
+
     var self = this;
 
-    try {
-        var socket = config.socket;
-        var width = config.width;
-        var height = config.height;
-    } catch (e) {
-        console.log('Bomberman initialization error: ' + e);
-    }
+    this.socket = this.clearParam('socket');
+    this.width = this.clearParam('width');
+    this.height = this.clearParam('height');
 
 
-    var canvas = function() {
+    this.canvas = function() {
         var c = document.getElementById("canvas");
 
-        c.width  = width;
-        c.height = height;
-        c.style.width  = width + 'px';
-        c.style.height = height + 'px';
+        c.width  = self.width;
+        c.height = self.height;
+        c.style.width  = self.width + 'px';
+        c.style.height = self.height + 'px';
 
         return document.getElementById("canvas").getContext("2d");
     }();
@@ -32,18 +30,18 @@ var Bomberman = function(config) {
 
     var field = new FieldRender(
         {
-            width: width,
-            height: width,
-            canvas: canvas
+            width: this.width,
+            height: this.height,
+            canvas: this.canvas
         }
     );
 
     var firstPlayer = new PlayerRender(
         {
-            canvas: canvas,
+            canvas: this.canvas,
             sprite: 'assets/img/player.png',
             initCallback: function(){},
-            speed: 32,
+            speed: 1,
             width: 32,
             height: 32
         }
@@ -52,10 +50,10 @@ var Bomberman = function(config) {
         {
             x: 24,
             y: 24,
-            canvas: canvas,
+            canvas: this.canvas,
             sprite: 'assets/img/monster.png',
             initCallback: function(){},
-            speed: 32,
+            speed: 1,
             width: 32,
             height: 32
         }
@@ -71,11 +69,35 @@ var Bomberman = function(config) {
     }
 
 
-    this.render = function() {
+    this.render = function(fires) {
         field.render();
-        //console.log(opponent);
+
         opponent.render();
         player.render();
+
+        var first = false;
+        var second = false;
+        if (typeof fires !== 'undefined') {
+            for (var i = 0; i < fires.length; i++) {
+                if (fires[i].x == player.x && fires[i].y == player.y) {
+                    first = 'You lose';
+                }
+
+                if (fires[i].x == opponent.x && fires[i].y == opponent.y) {
+                    second = 'You win';
+                }
+            }
+
+            if (first || second) {
+                var result;
+                if (first && second) {
+                    result = 'Draw';
+                } else {
+                    result = first ? first : second;
+                }
+                this.gameOver(result);
+            }
+        }
 
         return self;
     };
@@ -117,86 +139,191 @@ var Bomberman = function(config) {
     };
 
     this.update = function(params) {
-        opponent.x = params.x;
-        opponent.y = params.y;
-        console.log(params);
-        opponent.bombs = params.bombs;
+        if (typeof params.player !== 'undefined') {
+            if (typeof params.player.x !== 'undefined') {
+                opponent.x = params.player.x;
+            }
+
+            if (typeof params.player.y !== 'undefined') {
+                opponent.y = params.player.y;
+            }
+
+            if (typeof params.player.bombs !== 'undefined') {
+                opponent.bombs = params.player.bombs;
+            }
+
+            if (typeof params.player.bombCount !== 'undefined') {
+                opponent.bombCount = params.player.bombCount;
+            }
+
+            if (typeof params.player.speed !== 'undefined') {
+                opponent.speed = params.player.speed;
+            }
+
+            if (typeof params.player.fire !== 'undefined') {
+                opponent.fire = params.player.fire;
+            }
+        }
+
+        if (typeof params.field !== 'undefined') {
+            if (typeof params.field.explosion !== 'undefined') {
+                field.explosion(
+                    params.field.explosion.x,
+                    params.field.explosion.y,
+                    opponent.fire,
+                    this.fireEvent
+                );
+            }
+
+            if (typeof params.field.removeBonus !== 'undefined') {
+                field.removeBonus(params.field.removeBonus.x, params.field.removeBonus.y);
+            }
+        }
+
+
         self.render();
 
         return self;
     }
 
     var keysBind = function(key) {
-        var changed = false;
+        var move = function(x, y) {
+            var access = field.access(x, y);
+            if (access == 'death') {
+                self.gameOver('You lose');
+                return false;
+            }
+
+            if (access) {
+                player.x = x;
+                player.y = y;
+
+                var changes = {
+                    player: {
+                        x: player.x,
+                        y: player.y
+                    }
+                }
+
+                var bonus = function(type) {
+                    player[type]++;
+                    changes.player[type] = player[type];
+                    field.removeBonus(player.x, player.y);
+                    changes.field = {
+                        removeBonus: {
+                            x: player.x,
+                            y: player.y
+                        }
+                    };
+                };
+
+                switch (access) {
+                    case 'bombBonus':
+                        bonus('bombCount');
+                        break;
+                    case 'speedBonus':
+                        bonus('speed');
+                        break;
+                    case 'fireBonus':
+                        bonus('fire');
+                        break;
+                }
+                self.fireEvent(changes);
+            }
+        };
+
         var keyCode = key.charCode ? key.charCode : key.keyCode ? key.keyCode : 0;
+
         switch (keyCode) {
             case 37: //left
                 key.preventDefault();
-                if (player.x > 0 && field.access(player.x - 1, player.y)) {
-                    player.x -= 1;
-                    changed = true;
+
+                if (player.x > 0) {
+                    move(player.x - 1, player.y);
                 }
+
                 break;
             case 38: //up
                 key.preventDefault();
-                if (player.y > 0 && field.access(player.x, player.y -1)) {
-                    player.y -= 1;
-                    changed = true;
+
+                if (player.y > 0) {
+                    move(player.x, player.y -1);
+
                 }
                 break;
             case 39: //right
                 key.preventDefault();
-                if (player.x < 24 && field.access(player.x + 1, player.y)) {
-                    player.x += 1;
-                    changed = true;
+
+                if (player.x < 24) {
+                    move(player.x + 1, player.y);
                 }
+
                 break;
             case 40: //down;
                 key.preventDefault();
-                if (player.y < 24 && field.access(player.x, player.y + 1)) {
-                    player.y += 1;
-                    changed = true;
+
+                if (player.y < 24) {
+                    move(player.x, player.y + 1);
                 }
                 break;
             case 32: //space
                 key.preventDefault();
-                var bombX = player.x;
-                var bombY = player.y;
+
+                var bombX = player.x,
+                    bombY = player.y;
+
                 if (player.addBomb(player.x, player.y)) {
                     setTimeout(
                         function() {
-                            console.log('remove: ' + player.x + ':' + player.y);
                             player.removeBomb(bombX, bombY);
-                            field.explosion(bombX, bombY, player.fire, self.fireEvent);
-                            self.fireEvent();
+
+                            var fires = field.explosion(bombX, bombY, player.fire, self.fireEvent);
+                            //console.log(fires);
+
+                            self.fireEvent(
+                                {
+                                    player: {
+                                        bombs: player.bombs
+                                    },
+                                    field: {
+                                        explosion: {
+                                            x: bombX,
+                                            y: bombY
+                                        }
+                                    }
+                                },
+                                fires
+                            );
                         },
-                        1500
+                        1000
                     );
-                    changed = true;
+                    self.fireEvent(
+                        {
+                            player: {
+                                bombs: player.bombs
+                            }
+                        }
+                    );
                 }
                 break;
         }
-
-        if (changed) {
-            self.fireEvent();
-        }
     };
 
-    this.fireEvent = function() {
-        socket.send(
+    this.fireEvent = function(params, fires) {
+        self.socket.send(
             JSON.stringify(
                 {
                     action: 'render',
-                    params: {
-                        player: {
-                            x: player.x,
-                            y: player.y,
-                            bombs: player.bombs
-                        }
-                    }
+                    params: params
                 }
             )
         );
-        self.render();
+        self.render(fires);
+    };
+
+    this.gameOver = function(resultText) {
+        alert(resultText);
+        //$('body').unbind('keydown');
     };
 };
+Bomberman.prototype = Object.create(Base.prototype);

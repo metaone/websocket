@@ -1,12 +1,10 @@
 /**
  * Created with JetBrains PhpStorm.
  * User: Mykola_Skorenkyi
- * Date: 1/23/13
- * Time: 6:25 PM
- * To change this template use File | Settings | File Templates.
+ * Player Render Class
  */
-
 var PlayerRender = function(config) {
+    // pass config to parent
     BaseRender.apply(this, arguments);
 
     var self = this;
@@ -14,6 +12,9 @@ var PlayerRender = function(config) {
     this.bombs = [];
     this.bombCount = 3;
     this.fire = 3;
+    this.speed = this.clearParam('speed', 1);
+    this.width = this.clearParam('width');
+    this.height = this.clearParam('height');
 
     var bomb = new BaseRender(
         {
@@ -22,10 +23,6 @@ var PlayerRender = function(config) {
             initCallback: function(){}
         }
     );
-
-    this.speed = this.clearParam('speed');
-    this.width = this.clearParam('width');
-    this.height = this.clearParam('height');
 
     this.init = function() {
         bomb.init();
@@ -44,7 +41,11 @@ var PlayerRender = function(config) {
             bomb.y = this.bombs[i].y;
             bomb.render();
         }
-        this.canvas.drawImage(this.image, this.x * this.cellSize, this.y * this.cellSize);
+        this.canvas.drawImage(
+            this.image,
+            this.x * this.speed * this.cellSize,
+            this.y * this.speed * this.cellSize
+        );
         return self;
     };
 
@@ -61,7 +62,6 @@ var PlayerRender = function(config) {
     };
 
     this.removeBomb = function(x, y) {
-        console.log(this.bombs);
         for(var i = 0; i < this.bombs.length; i++) {
             if (this.bombs[i].x == x && this.bombs[i].y == y) {
                 this.bombs.splice(i, 1);

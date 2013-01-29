@@ -46,7 +46,7 @@ var FieldRender = function(config) {
         }
     }*/
     var matrix = [
-        [new Cell({}), new Cell({}), new Cell({}), new Cell({type: 'brick', bonus: 'speedBonus'}), new Cell({type: 'brick', bonus: 'fireBonus'}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({})],
+        [new Cell({}), new Cell({}), new Cell({}), new Cell({type: 'brick', bonus: 'fireBonus'}), new Cell({type: 'brick', bonus: 'bombBonus'}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({})],
         [new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({})],
         [new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({}), new Cell({})],
         [new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({}), new Cell({type: 'wall'}), new Cell({})],
@@ -138,7 +138,7 @@ var FieldRender = function(config) {
 
         for (var i = 0; i <= maxI; i++) {
             for (var j = 0; j <= maxJ; j++) {
-                var cell = matrix[i][j].getType();
+                var cell = matrix[i][j].type;
 
                 if (cell) {
                     var obj = eval(cell);
@@ -152,6 +152,10 @@ var FieldRender = function(config) {
 
     this.access = function(x, y) {
         return matrix[x][y].access();
+    };
+
+    this.removeBonus = function(x, y) {
+        return matrix[x][y].removeBonus();
     };
 
     this.explosion = function(x, y, fireLength, render) {
@@ -220,10 +224,12 @@ var FieldRender = function(config) {
                 for (var i = 0; i < fires.length; i++) {
                     matrix[fires[i].x][fires[i].y].removeFire();
                 }
-                render();
+                render({});
             },
             500
         );
+
+        return fires;
     };
 
 };
