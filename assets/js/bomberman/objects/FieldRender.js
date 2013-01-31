@@ -11,58 +11,37 @@ var FieldRender = function(config) {
 
     var self = this;
 
-    this.size = this.clearParam('size');
-    this.width = this.clearParam('width');
+    this.size   = this.clearParam('size');
+    this.width  = this.clearParam('width');
     this.height = this.clearParam('height');
     this.canvas = this.clearParam('canvas');
 
     var matrix = [];
 
-    var wall = new BaseRender(
-        {
-            sprite: 'assets/img/wall.png',
-            canvas: this.canvas,
+    /**
+     * Returns BaseRender object with given image
+     * @param img
+     * @return {BaseRender}
+     */
+    var createSprite = function(img) {
+        return new BaseRender({
+            sprite: img,
+            canvas: self.canvas,
             initCallback: function(){}
-        }
-    );
-    var brick = new BaseRender(
-        {
-            sprite: 'assets/img/brick.png',
-            canvas: this.canvas,
-            initCallback: function(){}
-        }
-    );
-    var fire = new BaseRender(
-        {
-            sprite: 'assets/img/fire.png',
-            canvas: this.canvas,
-            initCallback: function(){}
-        }
-    );
-    var bombBonus = new BaseRender(
-        {
-            sprite: 'assets/img/bomb-bonus.gif',
-            canvas: this.canvas,
-            initCallback: function(){}
-        }
-    );
-    var speedBonus = new BaseRender(
-        {
-            sprite: 'assets/img/speed-bonus.gif',
-            canvas: this.canvas,
-            initCallback: function(){}
-        }
-    );
-    var fireBonus = new BaseRender(
-        {
-            sprite: 'assets/img/fire-bonus.gif',
-            canvas: this.canvas,
-            initCallback: function(){}
-        }
-    );
+        });
+    };
 
+    var wall       = createSprite('assets/img/wall.png');
+    var brick      = createSprite('assets/img/brick.png');
+    var fire       = createSprite('assets/img/fire.png');
+    var bombBonus  = createSprite('assets/img/bomb-bonus.gif');
+    var speedBonus = createSprite('assets/img/speed-bonus.gif');
+    var fireBonus  = createSprite('assets/img/fire-bonus.gif');
 
-
+    /**
+     * Init
+     * @return {*}
+     */
     this.init = function() {
         wall.init();
         brick.init();
@@ -75,6 +54,10 @@ var FieldRender = function(config) {
         return self;
     };
 
+    /**
+     * Set field matrix from given paramter
+     * @param data
+     */
     this.setMatrix = function(data) {
         for (var i = 0; i < this.width; i++) {
             matrix[i] = [];
@@ -88,6 +71,9 @@ var FieldRender = function(config) {
         }
     };
 
+    /**
+     * Render
+     */
     this.render = function() {
         this.canvas.clearRect(0, 0, this.width * this.size, this.height * this.size);
         this.canvas.fillStyle = "#333333";
@@ -108,60 +94,63 @@ var FieldRender = function(config) {
         }
     };
 
+    /**
+     * Returns cell access
+     * @param x
+     * @param y
+     * @return {*}
+     */
     this.access = function(x, y) {
         return matrix[x][y].access();
     };
 
+    /**
+     * Removes bonus from cell
+     * @param x
+     * @param y
+     * @return {*}
+     */
     this.removeBonus = function(x, y) {
         return matrix[x][y].removeBonus();
     };
 
+    /**
+     * Sets fire cells for explosion
+     * @param x
+     * @param y
+     * @param fireLength
+     * @param render
+     * @return {Array}
+     */
     this.explosion = function(x, y, fireLength, render) {
-        var fires = [{
-            x: x,
-            y: y
-        }];
+        // fire center
+        var fires = [{x: x, y: y}];
         matrix[x][y].setFire();
 
-        for (var i = 1; i < fireLength; i++) {
+        for (var i = 1; i < fireLength; i++) {// right line fire
             if ((x + i) < this.width && matrix[x + i][y].setFire()) {
-                fires.push({
-                    x: x + i,
-                    y: y
-                });
+                fires.push({x: x + i, y: y});
             } else {
                 break;
             }
         }
-
-        for (var i = 1; i < fireLength; i++) {
+        for (var i = 1; i < fireLength; i++) {// left line fire
             if ((x - i) >= 0 && matrix[x - i][y].setFire()) {
-                fires.push({
-                    x: x - i,
-                    y: y
-                });
+                fires.push({x: x - i, y: y});
             } else {
                 break;
             }
         }
-
-        for (var i = 1; i < fireLength; i++) {
+        for (var i = 1; i < fireLength; i++) {// bottom line fire
             if ((y + i) < this.height && matrix[x][y + i].setFire()) {
-                fires.push({
-                    x: x,
-                    y: y + i
-                });
+                fires.push({x: x, y: y + i});
             } else {
                 break;
             }
         }
-
-        for (var i = 1; i < fireLength; i++) {
+        for (var i = 1; i < fireLength; i++) {// top line fire
             if ((y - i) >= 0 && matrix[x][y - i].setFire()) {
-                fires.push({
-                    x: x,
-                    y: y - i
-                });
+                fires.push({x: x, y: y - i});
             } else {
                 break;
             }

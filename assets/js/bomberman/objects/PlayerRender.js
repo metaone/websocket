@@ -13,17 +13,17 @@ var PlayerRender = function(config) {
     this.bombCount = 1;
     this.fire = 2;
     this.speed = this.clearParam('speed', 1);
-    this.width = this.clearParam('width');
-    this.height = this.clearParam('height');
 
-    var bomb = new BaseRender(
-        {
-            sprite: 'assets/img/bomb.png',
-            canvas: this.canvas,
-            initCallback: function(){}
-        }
-    );
+    var bomb = new BaseRender({
+        sprite: 'assets/img/bomb.png',
+        canvas: this.canvas,
+        initCallback: function(){}
+    });
 
+    /**
+     * Init method
+     * @return {*}
+     */
     this.init = function() {
         bomb.init();
 
@@ -32,9 +32,14 @@ var PlayerRender = function(config) {
             this.image.onload = this.initCallback;
         }
         this.image.src = this.sprite;
+
         return self;
     };
 
+    /**
+     * Render method
+     * @return {*}
+     */
     this.render = function() {
         for(var i = 0; i < this.bombs.length; i++) {
             bomb.x = this.bombs[i].x;
@@ -43,12 +48,18 @@ var PlayerRender = function(config) {
         }
         this.canvas.drawImage(
             this.image,
-            this.x * this.speed * this.cellSize,
-            this.y * this.speed * this.cellSize
+            this.x * this.speed * this.size,
+            this.y * this.speed * this.size
         );
         return self;
     };
 
+    /**
+     * Add bomb
+     * @param x
+     * @param y
+     * @return {Boolean}
+     */
     this.addBomb = function(x, y) {
         var count = this.bombs.length;
         if (this.bombs.length < this.bombCount) {
@@ -61,6 +72,12 @@ var PlayerRender = function(config) {
         return false;
     };
 
+    /**
+     * Remove bomb
+     * @param x
+     * @param y
+     * @return {*}
+     */
     this.removeBomb = function(x, y) {
         for(var i = 0; i < this.bombs.length; i++) {
             if (this.bombs[i].x == x && this.bombs[i].y == y) {
@@ -70,7 +87,5 @@ var PlayerRender = function(config) {
         }
         return self;
     };
-
-
 };
 PlayerRender.prototype = Object.create(BaseRender.prototype);

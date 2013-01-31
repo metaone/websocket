@@ -12,13 +12,12 @@ var Bomberman = function(config) {
     var self = this;
 
     this.socket = this.clearParam('socket');
-    this.size = this.clearParam('size', 32);
-
-    this.width = this.clearParam('width', 15);
+    this.size   = this.clearParam('size', 32);
+    this.width  = this.clearParam('width', 15);
     this.height = this.clearParam('height', 15);
 
 
-    this.canvas = function() {
+    this.canvas = (function() {
         var c = document.getElementById("canvas");
 
         c.width  = self.width * self.size;
@@ -27,7 +26,7 @@ var Bomberman = function(config) {
         c.style.height = self.height * self.size + 'px';
 
         return document.getElementById("canvas").getContext("2d");
-    }();
+    })();
 
     var field = new FieldRender({
         canvas: this.canvas,
@@ -36,47 +35,43 @@ var Bomberman = function(config) {
         height: this.height
     });
 
-    var firstPlayer = new PlayerRender(
-        {
-            canvas: this.canvas,
-            sprite: 'assets/img/player.png',
-            initCallback: function(){},
-            speed: 1,
-            width: 32,
-            height: 32
-        }
-    );
-    var secondPlayer = new PlayerRender(
-        {
-            x: this.width - 1,
-            y: this.height - 1,
-            canvas: this.canvas,
-            sprite: 'assets/img/monster.png',
-            initCallback: function(){},
-            speed: 1,
-            width: 32,
-            height: 32
-        }
-    );
+    var firstPlayer = new PlayerRender({
+        canvas: this.canvas,
+        sprite: 'assets/img/player.png',
+        initCallback: function(){}
+    });
+    var secondPlayer = new PlayerRender({
+        canvas: this.canvas,
+        x: this.width - 1,
+        y: this.height - 1,
+        sprite: 'assets/img/monster.png',
+        initCallback: function(){}
+    });
 
     var player, opponent;
-
+    /**
+     * Sets player role
+     * @param number
+     * @return {*}
+     */
     this.setPlayer = function (number) {
-        player = number ? secondPlayer : firstPlayer;
-        opponent = number ? firstPlayer : secondPlayer;
-
+        player   = number ? secondPlayer : firstPlayer;
+        opponent = number ? firstPlayer  : secondPlayer;
         return self;
     }
 
-
+    /**
+     * Render
+     * @param fires
+     * @return {*}
+     */
     this.render = function(fires) {
         field.render();
 
         opponent.render();
         player.render();
 
-        var first = false;
-        var second = false;
+        var first = false, second = false;
         if (typeof fires !== 'undefined') {
             for (var i = 0; i < fires.length; i++) {
                 if (fires[i].x == player.x && fires[i].y == player.y) {
@@ -122,7 +117,10 @@ var Bomberman = function(config) {
         };
     }*/
 
-
+    /**
+     * Render
+     * @return {*}
+     */
     this.init = function() {
         field.init();
         firstPlayer.init();
@@ -131,6 +129,11 @@ var Bomberman = function(config) {
         return self;
     }
 
+    /**
+     * Starts game
+     * @param params
+     * @return {*}
+     */
     this.start = function(params) {
         field.setMatrix(params.field);
 
@@ -140,40 +143,32 @@ var Bomberman = function(config) {
         return self;
     };
 
+    /**
+     * Updates field with given changes
+     * @param params
+     * @return {*}
+     */
     this.update = function(params) {
+
+        // update opponent
         if (typeof params.player !== 'undefined') {
-            if (typeof params.player.x !== 'undefined') {
-                opponent.x = params.player.x;
-            }
-
-            if (typeof params.player.y !== 'undefined') {
-                opponent.y = params.player.y;
-            }
-
-            if (typeof params.player.bombs !== 'undefined') {
-                opponent.bombs = params.player.bombs;
-            }
-
-            if (typeof params.player.bombCount !== 'undefined') {
-                opponent.bombCount = params.player.bombCount;
-            }
-
-            if (typeof params.player.speed !== 'undefined') {
-                opponent.speed = params.player.speed;
-            }
-
-            if (typeof params.player.fire !== 'undefined') {
-                opponent.fire = params.player.fire;
-            }
+            (function(values) {
+                for (var i = 0; i< values.length; i++) {
+                    if (typeof params.player[values[i]] !== 'undefined') {
+                        opponent[[values[i]]] = params.player[[values[i]]];
+                    }
+                }
+            })(['x', 'y', 'bombs', 'bombCount', 'speed', 'fire']);
         }
 
+        // update cells
         if (typeof params.field !== 'undefined') {
             if (typeof params.field.explosion !== 'undefined') {
-                field.explosion(
+                var fires = field.explosion(
                     params.field.explosion.x,
                     params.field.explosion.y,
                     opponent.fire,
-                    this.fireEvent
+                    this.actionEvent
                 );
             }
 
@@ -182,12 +177,14 @@ var Bomberman = function(config) {
             }
         }
 
-
-        self.render();
-
+        self.render(fires);
         return self;
     }
 
+    /**
+     * Game keys actions
+     * @param key
+     */
     var keysBind = function(key) {
         var move = function(x, y) {
             var access = field.access(x, y);
@@ -200,13 +197,7 @@ var Bomberman = function(config) {
                 player.x = x;
                 player.y = y;
 
-                var changes = {
-                    player: {
-                        x: player.x,
-                        y: player.y
-                    }
-                }
-
+                var changes = {player: {x: player.x, y: player.y}};
                 var bonus = function(type) {
                     player[type]++;
                     changes.player[type] = player[type];
@@ -220,50 +211,41 @@ var Bomberman = function(config) {
                 };
 
                 switch (access) {
-                    case 'bombBonus':
+                    case self.BONUS_BOMB:
                         bonus('bombCount');
                         break;
-                    case 'speedBonus':
+                    case self.BONUS_SPEED:
                         bonus('speed');
                         break;
-                    case 'fireBonus':
+                    case self.BONUS_FIRE:
                         bonus('fire');
                         break;
                 }
-                self.fireEvent(changes);
+                self.actionEvent(changes);
             }
         };
 
-        var keyCode = key.charCode ? key.charCode : key.keyCode ? key.keyCode : 0;
-
-        switch (keyCode) {
+        switch (key.charCode ? key.charCode : key.keyCode ? key.keyCode : 0) {
             case 37: //left
                 key.preventDefault();
-
                 if (player.x > 0) {
                     move(player.x - 1, player.y);
                 }
-
                 break;
             case 38: //up
                 key.preventDefault();
-
                 if (player.y > 0) {
                     move(player.x, player.y -1);
-
                 }
                 break;
             case 39: //right
                 key.preventDefault();
-
                 if (player.x < self.width - 1) {
                     move(player.x + 1, player.y);
                 }
-
                 break;
             case 40: //down;
                 key.preventDefault();
-
                 if (player.y < self.height - 1) {
                     move(player.x, player.y + 1);
                 }
@@ -278,9 +260,9 @@ var Bomberman = function(config) {
                     setTimeout(
                         function() {
                             player.removeBomb(bombX, bombY);
-                            var fires = field.explosion(bombX, bombY, player.fire, self.fireEvent);
+                            var fires = field.explosion(bombX, bombY, player.fire, self.actionEvent);
 
-                            self.fireEvent(
+                            self.actionEvent(
                                 {
                                     player: {
                                         bombs: player.bombs
@@ -297,7 +279,7 @@ var Bomberman = function(config) {
                         },
                         1000
                     );
-                    self.fireEvent({
+                    self.actionEvent({
                         player: {
                             bombs: player.bombs
                         }
@@ -307,18 +289,21 @@ var Bomberman = function(config) {
         }
     };
 
-    this.fireEvent = function(params, fires) {
-        self.socket.send(
-            JSON.stringify(
-                {
-                    action: 'render',
-                    params: params
-                }
-            )
-        );
+    /**
+     * Any action event
+     * Send changes to opponent and render changes
+     * @param params
+     * @param fires
+     */
+    this.actionEvent = function(params, fires) {
+        self.socket.send(JSON.stringify({action: this.ACTION_RENDER, params: params}));
         self.render(fires);
     };
 
+    /**
+     * Game Over
+     * @param resultText
+     */
     this.gameOver = function(resultText) {
         alert(resultText);
         //$('body').unbind('keydown');

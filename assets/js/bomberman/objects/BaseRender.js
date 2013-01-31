@@ -12,7 +12,7 @@ var BaseRender = function(config) {
     this.image        = false;
     this.x            = this.clearParam('x', 0);
     this.y            = this.clearParam('y', 0);
-    this.cellSize     = this.clearParam('cellSize', 32);
+    this.size         = this.clearParam('size', 32);
     this.sprite       = this.clearParam('sprite');
     this.canvas       = this.clearParam('canvas');
     this.initCallback = this.clearParam('initCallback');
@@ -36,7 +36,7 @@ var BaseRender = function(config) {
      * @return self
      */
     this.render = function() {
-        this.canvas.drawImage(this.image, this.x * this.cellSize, this.y * this.cellSize);
+        this.canvas.drawImage(this.image, this.x * this.size, this.y * this.size);
         return self;
     }
 

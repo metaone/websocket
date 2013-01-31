@@ -4,6 +4,19 @@
  * Base Class for getting params from config
  */
 var Base = function(config) {
+    // const
+    this.CELL_WALL   = 'wall';
+    this.CELL_BRICK  = 'brick';
+    this.CELL_FIRE   = 'fire';
+
+    this.BONUS_BOMB  = 'bombBonus';
+    this.BONUS_SPEED = 'speedBonus';
+    this.BONUS_FIRE  = 'fireBonus';
+
+    this.ACTION_DEATH = 'death';
+    this.ACTION_RENDER = 'render';
+    this.ACTION_DISCONNECT = 'disconnect';
+
     /**
      * Returns given param from config if it exist
      * @param param parameter name

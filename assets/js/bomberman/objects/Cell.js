@@ -11,8 +11,8 @@ var Cell = function(config) {
 
     var self = this;
 
-    var types = ['wall', 'brick', 'fire', 'bombBonus', 'speedBonus', 'fireBonus'];
-    var bonuses = ['bombBonus', 'speedBonus', 'fireBonus'];
+    var types = [this.CELL_WALL, this.CELL_BRICK, this.CELL_FIRE, this.BONUS_BOMB, this.BONUS_SPEED, this.BONUS_FIRE];
+    var bonuses = [this.BONUS_BOMB, this.BONUS_SPEED, this.BONUS_FIRE];
 
     var fireLevel = 0;
 
@@ -30,23 +30,35 @@ var Cell = function(config) {
         this.bonus = bonus;
     }
 
-    // fires destroy event
+    /**
+     * Destroys cell
+     * @return {*}
+     */
     this.destroy = function() {
-        if (this.type == 'wall') {
+        if (this.type == this.CELL_WALL) {
             this.type = this.bonus ? this.bonus : false;
         }
         return self;
     };
 
+    /**
+     * Sets fire to cell
+     * @return {Boolean}
+     */
     this.setFire = function() {
-        if (this.type !== 'wall') {
+        if (this.type !== this.CELL_WALL) {
             fireLevel++;
-            this.type = 'fire';
+            this.type = this.CELL_FIRE;
             return true;
         } else {
             return false;
         }
     };
+
+    /**
+     * Removes fire from cell
+     * @return {Boolean}
+     */
     this.removeFire = function() {
         fireLevel--;
 
@@ -65,16 +77,24 @@ var Cell = function(config) {
         }
     };
 
+    /**
+     * Returns cell access
+     * @return {*}
+     */
     this.access = function() {
-        if (this.type == 'wall' || this.type == 'brick') {
+        if (this.type == this.CELL_WALL || this.type == this.CELL_BRICK) {
             return false;
-        } else if (this.type == 'fire') {
-            return 'death';
+        } else if (this.type == this.CELL_FIRE) {
+            return this.ACTION_DEATH;
         } else {
             return this.type ? this.type : true;
         }
     };
 
+    /**
+     * Removes bonus from cell
+     * @return {*}
+     */
     this.removeBonus = function() {
         if ($.inArray(this.type, bonuses) > -1) {
             this.type = false;
