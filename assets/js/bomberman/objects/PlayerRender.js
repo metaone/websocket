@@ -10,8 +10,8 @@ var PlayerRender = function(config) {
     var self = this;
 
     this.bombs = [];
-    this.bombCount = 3;
-    this.fire = 3;
+    this.bombCount = 1;
+    this.fire = 2;
     this.speed = this.clearParam('speed', 1);
     this.width = this.clearParam('width');
     this.height = this.clearParam('height');

@@ -12,29 +12,29 @@ var Bomberman = function(config) {
     var self = this;
 
     this.socket = this.clearParam('socket');
-    this.width = this.clearParam('width');
-    this.height = this.clearParam('height');
+    this.size = this.clearParam('size', 32);
+
+    this.width = this.clearParam('width', 15);
+    this.height = this.clearParam('height', 15);
 
 
     this.canvas = function() {
         var c = document.getElementById("canvas");
 
-        c.width  = self.width;
-        c.height = self.height;
-        c.style.width  = self.width + 'px';
-        c.style.height = self.height + 'px';
+        c.width  = self.width * self.size;
+        c.height = self.height * self.size;
+        c.style.width  = self.width * self.size + 'px';
+        c.style.height = self.height * self.size + 'px';
 
         return document.getElementById("canvas").getContext("2d");
     }();
 
-
-    var field = new FieldRender(
-        {
-            width: this.width,
-            height: this.height,
-            canvas: this.canvas
-        }
-    );
+    var field = new FieldRender({
+        canvas: this.canvas,
+        size: this.size,
+        width: this.width,
+        height: this.height
+    });
 
     var firstPlayer = new PlayerRender(
         {
@@ -48,8 +48,8 @@ var Bomberman = function(config) {
     );
     var secondPlayer = new PlayerRender(
         {
-            x: 24,
-            y: 24,
+            x: this.width - 1,
+            y: this.height - 1,
             canvas: this.canvas,
             sprite: 'assets/img/monster.png',
             initCallback: function(){},
@@ -131,7 +131,9 @@ var Bomberman = function(config) {
         return self;
     }
 
-    this.start = function() {
+    this.start = function(params) {
+        field.setMatrix(params.field);
+
         $('body').keydown(keysBind);
         self.render();
 
@@ -254,7 +256,7 @@ var Bomberman = function(config) {
             case 39: //right
                 key.preventDefault();
 
-                if (player.x < 24) {
+                if (player.x < self.width - 1) {
                     move(player.x + 1, player.y);
                 }
 
@@ -262,7 +264,7 @@ var Bomberman = function(config) {
             case 40: //down;
                 key.preventDefault();
 
-                if (player.y < 24) {
+                if (player.y < self.height - 1) {
                     move(player.x, player.y + 1);
                 }
                 break;
@@ -276,9 +278,7 @@ var Bomberman = function(config) {
                     setTimeout(
                         function() {
                             player.removeBomb(bombX, bombY);
-
                             var fires = field.explosion(bombX, bombY, player.fire, self.fireEvent);
-                            //console.log(fires);
 
                             self.fireEvent(
                                 {
@@ -297,13 +297,11 @@ var Bomberman = function(config) {
                         },
                         1000
                     );
-                    self.fireEvent(
-                        {
-                            player: {
-                                bombs: player.bombs
-                            }
+                    self.fireEvent({
+                        player: {
+                            bombs: player.bombs
                         }
-                    );
+                    });
                 }
                 break;
         }

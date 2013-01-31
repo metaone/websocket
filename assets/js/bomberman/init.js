@@ -22,16 +22,15 @@ $(document).ready(function() {
 
     socket.onmessage = function(e) {
         var response = JSON.parse(e.data);
-        if (response.action == 'message') {
-            $('#ratchet-message-box').append('<p>' + response.params.text  + '</p>');
-        } else if(response.action == 'users') {
+
+        if (response.action == 'system') {
             $('#user-count').html('Online: ' + response.params.count);
         } else if(response.action == 'create') {
             $('#open-games').append(
                 '<a id="' + response.params.name + '-game" href="javascript:void(0);" class="btn btn-primary join">' + response.params.name + '</a>'
             );
         } else if(response.action == 'join') {
-            game.start();
+            game.start(response.params);
         } else if(response.action == 'cancel') {
             $('#open-games').find('#' + response.params.name + '-game').remove();
         } else if(response.action == 'render') {
@@ -41,30 +40,29 @@ $(document).ready(function() {
         }
     };
 
-    var game = new Bomberman(
-        {
-            socket: socket,
-            width: 800,
-            height: 800
-        }
-    ).init();
+    var game = new Bomberman({
+        socket: socket,
+        size: 32,
+        width: 15,
+        height: 15
+    }).init();
+
 
 
 
     // login part
     $('#register-name').keypress(function(key) {
         var input = $('#register-name');
-        if (key.keyCode == 13) {
+
+        if (key.keyCode == 13) { // enter key
             if (input.val().length > 0) {
                 socket.send(
-                    JSON.stringify(
-                        {
-                            action: 'login',
-                            params: {
-                                name: input.val()
-                            }
+                    JSON.stringify({
+                        action: 'login',
+                        params: {
+                            name: input.val()
                         }
-                    )
+                    })
                 );
                 $('.register').hide();
                 $('.content').show();
@@ -72,67 +70,52 @@ $(document).ready(function() {
         }
     });
 
-    // chat
-    $('#ratchet-message').keypress(function(e) {
-        if(e.which == 13) {
-            socket.send(
-                JSON.stringify(
-                    {
-                        action: 'message',
-                        params: {
-                            text: $('#ratchet-message').val()
-                        }
-                    }
-                )
-            );
-            $('#ratchet-message').val('').blur();
-        }
-    });
 
     // games
     $('#create-game').click(function(e) {
         e.preventDefault();
 
         var $this = $(this);
+
         if ($this.hasClass('create')) {
             socket.send(
-                JSON.stringify(
-                    {
-                        action: 'create',
-                        params: {}
-                    }
-                )
+                JSON.stringify({
+                    action: 'create',
+                    params: {}
+                })
             );
             game.setPlayer(0);
             $this.removeClass('create').addClass('cancel').html('Cancel');
         } else if($this.hasClass('cancel')) {
             socket.send(
-                JSON.stringify(
-                    {
-                        action: 'cancel',
-                        params: {}
-                    }
-                )
+                JSON.stringify({
+                    action: 'cancel',
+                    params: {}
+                })
             );
             $this.removeClass('cancel').addClass('create').html('Create');
         }
 
+        return false;
     });
 
     $('#open-games .join').live('click', function(e) {
         e.preventDefault();
 
         socket.send(
-            JSON.stringify(
-                {
-                    action: 'join',
-                    params: {
-                        game: $(this).attr('id')
-                    }
+            JSON.stringify({
+                action: 'join',
+                params: {
+                    game: $(this).attr('id'),
+                    width: game.width,
+                    height: game.height
+
                 }
-            )
+            })
         );
+
         game.setPlayer(1);
 
+        return false;
     });
 });

@@ -15,22 +15,48 @@ use Ratchet\ConnectionInterface;
  */
 class Bomberman implements MessageComponentInterface
 {
+    // socket message action
+    const ACTION = 'action';
+    // actions types
+    const ACTION_SYSTEM     = 'system';         // system messages
+    const ACTION_LOGIN      = 'login';          // user login
+    const ACTION_RENDER     = 'render';         // render game frame
+    const ACTION_CREATE     = 'create';         // create game
+    const ACTION_CANCEL     = 'cancel';         // cancel game
+    const ACTION_JOIN       = 'join';           // join game
+    const ACTION_FINISH     = 'finish';         // game over
+    const ACTION_DISCONNECT = 'disconnect'; // player disconnect
+
+    // socket message parameters
+    const PARAMS = 'params';
+    // params types
+    const PARAM_COUNT    = 'count';    // connections count
+    const PARAM_NAME     = 'name';     // username
+    const PARAM_OPPONENT = 'opponent'; // opponent
+    const PARAM_FIELD    = 'field';    // game field
+
+    // field cell params
+    const CELL_TYPE  = 'type';  // cell type
+    const CELL_BONUS = 'bonus'; // bonus inside cell
+    const CELL_WALL  = 'wall';  // wall cell type
+    const CELL_BRICK = 'brick'; // wall brick type
+
+    // cell bonuses
+    protected $_bonuses = array('bombBonus', 'fireBonus');
+
+
     // active connections
-    protected $_clients;
+    protected $_connections;
+
+    // games list
     protected $_games = array();
 
-    protected $_actions = array(
-        'login',
-        'message',
-        'create',
-        'cancel',
-        'join',
-        'render',
-    );
-
+    /**
+     * Constructor
+     */
     public function __construct()
     {
-        $this->_clients = new \SplObjectStorage;
+        $this->_connections = new \SplObjectStorage;
     }
 
     /**
@@ -39,20 +65,8 @@ class Bomberman implements MessageComponentInterface
      */
     public function onOpen(ConnectionInterface $conn)
     {
-        $this->_clients->attach($conn);
-    }
-
-    /**
-     * @param \Ratchet\ConnectionInterface $from
-     * @param $msg
-     * @return void
-     */
-    public function onMessage(ConnectionInterface $from, $msg)
-    {
-        $response = json_decode($msg);
-        if (in_array($response->action, $this->_actions)) {
-            $this->{$response->action}($from, $response->params);
-        }
+        $this->_connections->attach($conn);
+        $this->_sendResponseToALL(self::ACTION_SYSTEM, array(self::PARAM_COUNT => count($this->_connections)));
     }
 
     /**
@@ -61,10 +75,10 @@ class Bomberman implements MessageComponentInterface
      */
     public function onClose(ConnectionInterface $conn)
     {
-        $this->_clients->detach($conn);
-        $this->_sendResponse('users', array('count' => count($this->_clients)));
-        $this->_sendResponse('message', array('text' => '<b>' . $conn->Session->get('name') . '</b> gone offline.'));
+        $this->_gameCancel($conn);
 
+        $this->_connections->detach($conn);
+        $this->_sendResponseToALL(self::ACTION_SYSTEM, array(self::PARAM_COUNT => count($this->_connections)));
     }
 
     /**
@@ -78,75 +92,113 @@ class Bomberman implements MessageComponentInterface
         $conn->close();
     }
 
-    private function _generateField()
+    /**
+     * @param \Ratchet\ConnectionInterface $conn
+     * @param $msg
+     * @return void
+     */
+    public function onMessage(ConnectionInterface $conn, $msg)
     {
-        return array();
+        $response = json_decode($msg);
+
+        switch($response->action) {
+            case self::ACTION_LOGIN:
+                $conn->Session->set(self::PARAM_NAME, $response->params->name);
+                break;
+            case self::ACTION_CREATE:
+                $creator = $conn->Session->get(self::PARAM_NAME);
+                $this->_games[$creator] = $conn;
+                $this->_sendResponseToALL(self::ACTION_CREATE, array(self::PARAM_NAME => $creator));
+                break;
+            case self::ACTION_CANCEL:
+                $this->_gameCancel($conn);
+                break;
+            case self::ACTION_JOIN:
+                $creator = $this->_games[substr($response->params->game, 0, strlen($response->params->game) - 5)];
+
+                $creator->Session->set(self::PARAM_OPPONENT, $conn);
+                $conn->Session->set(self::PARAM_OPPONENT, $creator);
+
+                $field = $this->_generateField($response->params->width, $response->params->height);
+                $this->_sendResponse($creator, self::ACTION_JOIN, array(self::PARAM_FIELD => $field));
+                $this->_sendResponse($conn, self::ACTION_JOIN, array(self::PARAM_FIELD => $field));
+
+                $this->_gameCancel($creator);
+                break;
+            case self::ACTION_RENDER:
+                $this->_sendResponse($conn->Session->get(self::PARAM_OPPONENT), self::ACTION_RENDER, $response->params);
+                break;
+
+        }
     }
 
-    public function create(ConnectionInterface $conn, $params)
+    /**
+     * Generates field matrix
+     * @param int $width
+     * @param int $height
+     * @return array
+     */
+    private function _generateField($width, $height)
     {
-        $creator = $conn->Session->get('name');
-        $this->_games[$creator] = array($conn);
+        $res = array();
 
-        $this->_sendResponse('create', array('name' => $creator));
+        for ($i = 0; $i < $width; $i++) {
+            for ($j = 0; $j < $height; $j++) {
+                if ($i % 2 != 0 && $j % 2 != 0) { // add walls
+                    $res[$i][$j] = array(self::CELL_TYPE => self::CELL_WALL);
+                } else {
+                    if (
+                        ($j == 0 && $i < 2) || ($i == 0 && $j < 2) || // reserve space for top player
+                        ($j == $height - 1 && $i > $width - 3) || ($i == $width - 1 && $j > $height - 3) // reserve space for bottom player
+                    ) {
+                        $res[$i][$j] = false;
+                    } else {
+                        if (rand(0, 1)) { // generate rest field cells
+                            if (rand(0, 100) <= 10) {
+                                $res[$i][$j] = array(self::CELL_TYPE => self::CELL_BRICK, self::CELL_BONUS => $this->_bonuses[rand(0,1)]);
+                            } else {
+                                $res[$i][$j] = array(self::CELL_TYPE => self::CELL_BRICK);
+                            }
+
+                        } else {
+                            $res[$i][$j] = false;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $res;
     }
 
-    public function join(ConnectionInterface $conn, $params)
+    /**
+     * Cancel game
+     * @param \Ratchet\ConnectionInterface $conn
+     */
+    protected function _gameCancel(ConnectionInterface $conn)
     {
-        $game = substr($params->game, 0, strlen($params->game) - 5);
-        $this->_games[$game][] = $conn;
-        $this->_sendResponse('join', array());
-
-    }
-
-    public function cancel(ConnectionInterface $conn, $params)
-    {
-        $creator = $conn->Session->get('name');
+        $creator = $conn->Session->get(self::PARAM_NAME);
         unset($this->_games[$creator]);
-
-        $this->_sendResponse('cancel', array('name' => $creator));
+        $this->_sendResponseToALL(self::ACTION_CANCEL, array(self::PARAM_NAME => $creator));
     }
 
-    public function render(ConnectionInterface $conn, $params)
+    /**
+     * Sends message to saved connections
+     * @param string $action
+     * @param array $params
+     * @param array $exclude
+     */
+    protected function _sendResponseToALL($action, $params, $exclude = array())
     {
-        $this->_sendResponse('render', array());
-        foreach($this->_clients as $client) {
-            if ($conn != $client) {
-                $client->send(
-                    json_encode(
-                        array(
-                            'action' => 'render',
-                            'params' => $params
-                        )
-                    )
-                );
+        foreach($this->_connections as $connection) {
+            if (!in_array($connection, $exclude)) {
+                $this->_sendResponse($connection, $action, $params);
             }
         }
     }
 
-    public function login(ConnectionInterface $conn, $params)
+    protected function _sendResponse(ConnectionInterface $conn, $action, $params)
     {
-        $conn->Session->set('name', $params->name);
-        $this->_sendResponse('users', array('count' => count($this->_clients)));
-        $this->_sendResponse('message', array('text' => '<b>' . $params->name . '</b> appears online.'));
-    }
-
-    public function message(ConnectionInterface $conn, $params)
-    {
-        $this->_sendResponse('message', array('text' => '<b>' .$conn->Session->get('name') . ':</b> ' . $params->text));
-    }
-
-    protected function _sendResponse($action, $params)
-    {
-        foreach($this->_clients as $client) {
-            $client->send(
-                json_encode(
-                    array(
-                        'action' => $action,
-                        'params' => $params
-                    )
-                )
-            );
-        }
+        $conn->send(json_encode(array(self::ACTION => $action, self::PARAMS => $params)));
     }
 }
