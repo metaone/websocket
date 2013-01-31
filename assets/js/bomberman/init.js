@@ -33,6 +33,7 @@ $(document).ready(function() {
             game.start(response.params);
         } else if(response.action == 'cancel') {
             $('#open-games').find('#' + response.params.name + '-game').remove();
+            $('#create-game').removeClass('cancel').addClass('create').html('Create');
         } else if(response.action == 'render') {
             if (typeof response.params !== 'undefined') {
                 game.update(response.params);

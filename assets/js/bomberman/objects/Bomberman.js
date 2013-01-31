@@ -10,6 +10,7 @@ var Bomberman = function(config) {
     Base.apply(this, arguments);
 
     var self = this;
+    var go = true;
 
     this.socket = this.clearParam('socket');
     this.size   = this.clearParam('size', 32);
@@ -66,31 +67,33 @@ var Bomberman = function(config) {
      * @return {*}
      */
     this.render = function(fires) {
-        field.render();
+        if (go) {
+            field.render();
 
-        opponent.render();
-        player.render();
+            opponent.render();
+            player.render();
 
-        var first = false, second = false;
-        if (typeof fires !== 'undefined') {
-            for (var i = 0; i < fires.length; i++) {
-                if (fires[i].x == player.x && fires[i].y == player.y) {
-                    first = 'You lose';
+            var first = false, second = false;
+            if (typeof fires !== 'undefined') {
+                for (var i = 0; i < fires.length; i++) {
+                    if (fires[i].x == player.x && fires[i].y == player.y) {
+                        first = this.LOSE_MESSAGE;
+                    }
+
+                    if (fires[i].x == opponent.x && fires[i].y == opponent.y) {
+                        second = this.WIN_MESSAGE;
+                    }
                 }
 
-                if (fires[i].x == opponent.x && fires[i].y == opponent.y) {
-                    second = 'You win';
+                if (first || second) {
+                    var result;
+                    if (first && second) {
+                        result = this.DRAW_MESSAGE;
+                    } else {
+                        result = first ? first : second;
+                    }
+                    this.gameOver(result);
                 }
-            }
-
-            if (first || second) {
-                var result;
-                if (first && second) {
-                    result = 'Draw';
-                } else {
-                    result = first ? first : second;
-                }
-                this.gameOver(result);
             }
         }
 
@@ -118,7 +121,7 @@ var Bomberman = function(config) {
     }*/
 
     /**
-     * Render
+     * Init
      * @return {*}
      */
     this.init = function() {
@@ -177,6 +180,11 @@ var Bomberman = function(config) {
             }
         }
 
+        // game result
+        if (typeof params.result !== 'undefined') {
+            this.gameOver(params.result);
+        }
+
         self.render(fires);
         return self;
     }
@@ -188,8 +196,9 @@ var Bomberman = function(config) {
     var keysBind = function(key) {
         var move = function(x, y) {
             var access = field.access(x, y);
-            if (access == 'death') {
-                self.gameOver('You lose');
+            if (access == self.ACTION_DEATH) {
+                self.socket.send(JSON.stringify({action: self.ACTION_RENDER, params: {result: self.WIN_MESSAGE}}));
+                self.gameOver(self.LOSE_MESSAGE);
                 return false;
             }
 
@@ -223,6 +232,7 @@ var Bomberman = function(config) {
                 }
                 self.actionEvent(changes);
             }
+            return true;
         };
 
         switch (key.charCode ? key.charCode : key.keyCode ? key.keyCode : 0) {
@@ -305,8 +315,9 @@ var Bomberman = function(config) {
      * @param resultText
      */
     this.gameOver = function(resultText) {
+        go = false;
         alert(resultText);
-        //$('body').unbind('keydown');
+        $('body').unbind('keydown');
     };
 };
 Bomberman.prototype = Object.create(Base.prototype);

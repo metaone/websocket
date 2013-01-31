@@ -17,6 +17,10 @@ var Base = function(config) {
     this.ACTION_RENDER = 'render';
     this.ACTION_DISCONNECT = 'disconnect';
 
+    this.WIN_MESSAGE  = 'You won!';
+    this.LOSE_MESSAGE = 'You lose!';
+    this.DRAW_MESSAGE = 'Draw!';
+
     /**
      * Returns given param from config if it exist
      * @param param parameter name
