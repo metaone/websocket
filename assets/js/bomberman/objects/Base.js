@@ -15,7 +15,13 @@ var Base = function(config) {
 
     this.ACTION_DEATH = 'death';
     this.ACTION_RENDER = 'render';
+    this.ACTION_FINISH = 'finish';
     this.ACTION_DISCONNECT = 'disconnect';
+    this.ACTION_SYSTEM = 'system';
+    this.ACTION_CREATE = 'create';
+    this.ACTION_JOIN = 'join';
+    this.ACTION_CANCEL = 'cancel';
+    this.ACTION_LOGIN = 'login';
 
     this.WIN_MESSAGE  = 'You won!';
     this.LOSE_MESSAGE = 'You lose!';

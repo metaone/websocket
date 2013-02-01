@@ -14,6 +14,7 @@ $(document).ready(function() {
 
     // init socket
     var socket = new WebSocket(window.config.socket);
+    var bomberman = new Bomberman({socket: socket, size: 32, width: 15, height: 15}).init();
 
     socket.onopen = function() {
         $('#ratchet-success').removeClass('hide');
@@ -23,48 +24,34 @@ $(document).ready(function() {
     socket.onmessage = function(e) {
         var response = JSON.parse(e.data);
 
-        if (response.action == 'system') {
+        if (response.action == bomberman.ACTION_SYSTEM) {
             $('#user-count').html('Online: ' + response.params.count);
-        } else if(response.action == 'create') {
-            $('#open-games').append(
-                '<a id="' + response.params.name + '-game" href="javascript:void(0);" class="btn btn-primary join">' + response.params.name + '</a>'
-            );
-        } else if(response.action == 'join') {
-            game.start(response.params);
-        } else if(response.action == 'cancel') {
-            $('#open-games').find('#' + response.params.name + '-game').remove();
-            $('#create-game').removeClass('cancel').addClass('create').html('Create');
-        } else if(response.action == 'render') {
-            if (typeof response.params !== 'undefined') {
-                game.update(response.params);
+            $('#open-games').html('');
+            for (var i = 0; i < response.params.games; i++) {
+                $('#open-games').append('<a id="' + response.params.games[i] + '-game" href="javascript:void(0);" class="btn btn-primary join">' + response.params.games[i] + '</a>');
             }
+        } else if (response.action == bomberman.ACTION_JOIN) {
+            bomberman.start(response.params);
+        } else if (response.action == bomberman.ACTION_RENDER) {
+            if (typeof response.params !== 'undefined') {
+                bomberman.update(response.params);
+            }
+        } else if (response.action == bomberman.ACTION_DISCONNECT) {
+            bomberman.gameOver(bomberman.WIN_MESSAGE);
         }
     };
 
-    var game = new Bomberman({
-        socket: socket,
-        size: 32,
-        width: 15,
-        height: 15
-    }).init();
-
-
-
+    // popups
+    $('#game-over-popup').on('hidden', function () {
+        console.log('hide');
+    })
 
     // login part
     $('#register-name').keypress(function(key) {
-        var input = $('#register-name');
-
         if (key.keyCode == 13) { // enter key
+            var input = $('#register-name');
             if (input.val().length > 0) {
-                socket.send(
-                    JSON.stringify({
-                        action: 'login',
-                        params: {
-                            name: input.val()
-                        }
-                    })
-                );
+                socket.send(JSON.stringify({action: bomberman.ACTION_LOGIN, params: {name: input.val()}}));
                 $('.register').hide();
                 $('.content').show();
             }
@@ -75,48 +62,22 @@ $(document).ready(function() {
     // games
     $('#create-game').click(function(e) {
         e.preventDefault();
-
         var $this = $(this);
-
         if ($this.hasClass('create')) {
-            socket.send(
-                JSON.stringify({
-                    action: 'create',
-                    params: {}
-                })
-            );
-            game.setPlayer(0);
+            socket.send(JSON.stringify({action: 'create', params: {}}));
+            bomberman.setPlayer(0);
             $this.removeClass('create').addClass('cancel').html('Cancel');
         } else if($this.hasClass('cancel')) {
-            socket.send(
-                JSON.stringify({
-                    action: 'cancel',
-                    params: {}
-                })
-            );
+            socket.send(JSON.stringify({action: 'cancel', params: {}}));
             $this.removeClass('cancel').addClass('create').html('Create');
         }
-
         return false;
     });
 
     $('#open-games .join').live('click', function(e) {
         e.preventDefault();
-
-        socket.send(
-            JSON.stringify({
-                action: 'join',
-                params: {
-                    game: $(this).attr('id'),
-                    width: game.width,
-                    height: game.height
-
-                }
-            })
-        );
-
-        game.setPlayer(1);
-
+        socket.send(JSON.stringify({action: 'join', params: {game: $(this).attr('id'), width: bomberman.width, height: bomberman.height}}));
+        bomberman.setPlayer(1);
         return false;
     });
 });

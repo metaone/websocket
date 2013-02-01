@@ -306,7 +306,7 @@ var Bomberman = function(config) {
      * @param fires
      */
     this.actionEvent = function(params, fires) {
-        self.socket.send(JSON.stringify({action: this.ACTION_RENDER, params: params}));
+        self.socket.send(JSON.stringify({action: self.ACTION_RENDER, params: params}));
         self.render(fires);
     };
 
@@ -316,7 +316,12 @@ var Bomberman = function(config) {
      */
     this.gameOver = function(resultText) {
         go = false;
-        alert(resultText);
+
+        self.socket.send(JSON.stringify({action: this.ACTION_FINISH, params: {}}));
+
+        $('#game-over-popup').find('.modal-body p').html(resultText);
+        $('#game-over-popup').modal('show');
+
         $('body').unbind('keydown');
     };
 };

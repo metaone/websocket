@@ -25,12 +25,13 @@ class Bomberman implements MessageComponentInterface
     const ACTION_CANCEL     = 'cancel';         // cancel game
     const ACTION_JOIN       = 'join';           // join game
     const ACTION_FINISH     = 'finish';         // game over
-    const ACTION_DISCONNECT = 'disconnect'; // player disconnect
+    const ACTION_DISCONNECT = 'disconnect';     // player disconnect
 
     // socket message parameters
     const PARAMS = 'params';
     // params types
     const PARAM_COUNT    = 'count';    // connections count
+    const PARAM_GAMES    = 'games';    // games list
     const PARAM_NAME     = 'name';     // username
     const PARAM_OPPONENT = 'opponent'; // opponent
     const PARAM_FIELD    = 'field';    // game field
@@ -66,7 +67,7 @@ class Bomberman implements MessageComponentInterface
     public function onOpen(ConnectionInterface $conn)
     {
         $this->_connections->attach($conn);
-        $this->_sendResponseToALL(self::ACTION_SYSTEM, array(self::PARAM_COUNT => count($this->_connections)));
+        $this->_sentSystemInfo();
     }
 
     /**
@@ -77,8 +78,13 @@ class Bomberman implements MessageComponentInterface
     {
         $this->_gameCancel($conn);
 
+        $opponent = $conn->Session->get(self::PARAM_OPPONENT);
+        if ($opponent instanceof ConnectionInterface) {
+            $this->_sendResponse($opponent, self::ACTION_DISCONNECT);
+        }
+
         $this->_connections->detach($conn);
-        $this->_sendResponseToALL(self::ACTION_SYSTEM, array(self::PARAM_COUNT => count($this->_connections)));
+        $this->_sentSystemInfo();
     }
 
     /**
@@ -108,27 +114,36 @@ class Bomberman implements MessageComponentInterface
             case self::ACTION_CREATE:
                 $creator = $conn->Session->get(self::PARAM_NAME);
                 $this->_games[$creator] = $conn;
-                $this->_sendResponseToALL(self::ACTION_CREATE, array(self::PARAM_NAME => $creator));
+                $this->_sentSystemInfo();
+                //$this->_sendResponseToALL(self::ACTION_CREATE, array(self::PARAM_NAME => $creator));
                 break;
             case self::ACTION_CANCEL:
                 $this->_gameCancel($conn);
                 break;
             case self::ACTION_JOIN:
                 $creator = $this->_games[substr($response->params->game, 0, strlen($response->params->game) - 5)];
-
-                $creator->Session->set(self::PARAM_OPPONENT, $conn);
-                $conn->Session->set(self::PARAM_OPPONENT, $creator);
-
-                $field = $this->_generateField($response->params->width, $response->params->height);
-                $this->_sendResponse($creator, self::ACTION_JOIN, array(self::PARAM_FIELD => $field));
-                $this->_sendResponse($conn, self::ACTION_JOIN, array(self::PARAM_FIELD => $field));
-
-                $this->_gameCancel($creator);
+                if ($creator instanceof ConnectionInterface) {
+                    $creator->Session->set(self::PARAM_OPPONENT, $conn);
+                    $conn->Session->set(self::PARAM_OPPONENT, $creator);
+                    $field = $this->_generateField($response->params->width, $response->params->height);
+                    $this->_sendResponse($creator, self::ACTION_JOIN, array(self::PARAM_FIELD => $field));
+                    $this->_sendResponse($conn, self::ACTION_JOIN, array(self::PARAM_FIELD => $field));
+                    $this->_gameCancel($creator);
+                }
                 break;
             case self::ACTION_RENDER:
-                $this->_sendResponse($conn->Session->get(self::PARAM_OPPONENT), self::ACTION_RENDER, $response->params);
+                $opponent = $conn->Session->get(self::PARAM_OPPONENT);
+                if ($opponent instanceof ConnectionInterface) {
+                    $this->_sendResponse($opponent, self::ACTION_RENDER, $response->params);
+                }
                 break;
-
+            case self::ACTION_FINISH:
+                $opponent = $conn->Session->get(self::PARAM_OPPONENT);
+                $conn->Session->set(self::PARAM_OPPONENT, false);
+                if ($opponent instanceof ConnectionInterface) {
+                    $opponent->Session->set(self::PARAM_OPPONENT, false);
+                }
+                break;
         }
     }
 
@@ -179,11 +194,12 @@ class Bomberman implements MessageComponentInterface
     {
         $creator = $conn->Session->get(self::PARAM_NAME);
         unset($this->_games[$creator]);
-        $this->_sendResponseToALL(self::ACTION_CANCEL, array(self::PARAM_NAME => $creator));
+        $this->_sentSystemInfo();
+//        /$this->_sendResponseToALL(self::ACTION_CANCEL, array(self::PARAM_NAME => $creator));
     }
 
     /**
-     * Sends message to saved connections
+     * Sends message to active connections
      * @param string $action
      * @param array $params
      * @param array $exclude
@@ -197,8 +213,26 @@ class Bomberman implements MessageComponentInterface
         }
     }
 
-    protected function _sendResponse(ConnectionInterface $conn, $action, $params)
+    /**
+     * Sends message to given connection
+     * @param \Ratchet\ConnectionInterface $conn
+     * @param $action
+     * @param array $params
+     */
+    protected function _sendResponse(ConnectionInterface $conn, $action, $params = array())
     {
         $conn->send(json_encode(array(self::ACTION => $action, self::PARAMS => $params)));
+    }
+
+    /**
+     * Sends system info to active connections
+     */
+    protected function _sentSystemInfo()
+    {
+
+        $this->_sendResponseToALL(
+            self::ACTION_SYSTEM,
+            array(self::PARAM_COUNT => count($this->_connections), self::PARAM_GAMES => array_keys($this->_games))
+        );
     }
 }
