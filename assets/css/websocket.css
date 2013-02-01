@@ -1,0 +1,24 @@
+.div-textarea {
+    border: 1px solid #CCCCCC;
+    height: 200px;
+    margin: 6px 0 10px 0;
+    overflow: auto;
+    padding: 5px;
+}
+
+#canvas {
+    border: 1px solid #CCCCCC;
+}
+
+#chat {
+    float: none;
+    width: auto;
+}
+
+#open-games {
+    margin-bottom: 5px;
+}
+
+.join {
+    margin-right: 2px;
+}
