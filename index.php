@@ -42,6 +42,22 @@
                         <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
                     </div>
                 </div>
+                <div id="create-game-popup" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="create-game-label" aria-hidden="true">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                        <h3 id="create-game-label">Create game</h3>
+                    </div>
+                    <div class="modal-body">
+                        <label for="field-width" class="control-label label">Width:</label>
+                        <input type="text" name="field-width" id="field-width" value="15" class="span12" />
+                        <label for="field-height" class="control-label label">Height:</label>
+                        <input type="text" name="field-height" id="field-height" value="15" class="span12"/>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                        <button id="create-game-submit" class="btn btn-primary">Create</button>
+                    </div>
+                </div>
 
                 <!-- Connections info -->
                 <div class="clearfix">
@@ -68,7 +84,7 @@
                         <!-- Games Status -->
                         <div id="games">
                             <h6>Open games: </h6>
-                            <div id="open-games">
+                            <div id="open-games" class="ready">
 
                             </div>
                             <a id="create-game" href="javascript:void(0);" class="btn btn-primary create">Create</a>
@@ -76,7 +92,7 @@
                         </div>
 
                         <!-- Canvas -->
-                        <div class="pagination-centered">
+                        <div id="field" class="pagination-centered hide">
                             <canvas id="canvas">
                                 Your browser does not support the HTML5 canvas tag.
                             </canvas>

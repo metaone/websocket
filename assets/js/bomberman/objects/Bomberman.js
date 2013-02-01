@@ -138,11 +138,10 @@ var Bomberman = function(config) {
      * @return {*}
      */
     this.start = function(params) {
+        go = true;
         field.setMatrix(params.field);
-
         $('body').keydown(keysBind);
         self.render();
-
         return self;
     };
 

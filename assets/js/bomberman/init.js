@@ -27,11 +27,15 @@ $(document).ready(function() {
         if (response.action == bomberman.ACTION_SYSTEM) {
             $('#user-count').html('Online: ' + response.params.count);
             $('#open-games').html('');
-            for (var i = 0; i < response.params.games; i++) {
+            for (var i = 0; i < response.params.games.length; i++) {
                 $('#open-games').append('<a id="' + response.params.games[i] + '-game" href="javascript:void(0);" class="btn btn-primary join">' + response.params.games[i] + '</a>');
             }
         } else if (response.action == bomberman.ACTION_JOIN) {
             bomberman.start(response.params);
+            $('#games').slideUp();
+            $('#field').slideDown();
+            $('#create-game').removeClass('cancel').addClass('create').html('Create');
+            $('#open-games').addClass('ready');
         } else if (response.action == bomberman.ACTION_RENDER) {
             if (typeof response.params !== 'undefined') {
                 bomberman.update(response.params);
@@ -43,8 +47,21 @@ $(document).ready(function() {
 
     // popups
     $('#game-over-popup').on('hidden', function () {
-        console.log('hide');
-    })
+        $('#field').slideUp();
+        $('#games').slideDown();
+
+    });
+    $('#create-game-submit').click(function(e) {
+        e.preventDefault();
+
+        socket.send(JSON.stringify({action: bomberman.ACTION_CREATE, params: {width: $('#field-width').val(), height: $('#field-height').val()}}));
+        bomberman.setPlayer(0);
+        $('#create-game').removeClass('create').addClass('cancel').html('Cancel');
+        $('#open-games').removeClass('ready');
+        $('#create-game-popup').modal('hide');
+
+        return false;
+    });
 
     // login part
     $('#register-name').keypress(function(key) {
@@ -52,8 +69,8 @@ $(document).ready(function() {
             var input = $('#register-name');
             if (input.val().length > 0) {
                 socket.send(JSON.stringify({action: bomberman.ACTION_LOGIN, params: {name: input.val()}}));
-                $('.register').hide();
-                $('.content').show();
+                $('.register').slideUp();
+                $('.content').slideDown();
             }
         }
     });
@@ -64,19 +81,23 @@ $(document).ready(function() {
         e.preventDefault();
         var $this = $(this);
         if ($this.hasClass('create')) {
-            socket.send(JSON.stringify({action: 'create', params: {}}));
+            //$('#create-game-popup').modal({});
+
+            socket.send(JSON.stringify({action: bomberman.ACTION_CREATE, params: {width: $('#field-width').val(), height: $('#field-height').val()}}));
             bomberman.setPlayer(0);
-            $this.removeClass('create').addClass('cancel').html('Cancel');
+            $('#create-game').removeClass('create').addClass('cancel').html('Cancel');
+            $('#open-games').removeClass('ready');
         } else if($this.hasClass('cancel')) {
-            socket.send(JSON.stringify({action: 'cancel', params: {}}));
+            socket.send(JSON.stringify({action: bomberman.ACTION_CANCEL, params: {}}));
             $this.removeClass('cancel').addClass('create').html('Create');
+            $('#open-games').addClass('ready');
         }
         return false;
     });
 
-    $('#open-games .join').live('click', function(e) {
+    $('#open-games.ready .join').live('click', function(e) {
         e.preventDefault();
-        socket.send(JSON.stringify({action: 'join', params: {game: $(this).attr('id'), width: bomberman.width, height: bomberman.height}}));
+        socket.send(JSON.stringify({action: bomberman.ACTION_JOIN, params: {game: $(this).attr('id'), width: bomberman.width, height: bomberman.height}}));
         bomberman.setPlayer(1);
         return false;
     });
