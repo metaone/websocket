@@ -31,8 +31,8 @@ var FieldRender = function(config) {
         });
     };
 
-    var wall       = createSprite('assets/img/wall.png');
-    var brick      = createSprite('assets/img/brick.png');
+    var wall       = createSprite('assets/img/wall.bmp');
+    var brick      = createSprite('assets/img/brick.bmp');
     var fire       = createSprite('assets/img/fire.png');
     var bombBonus  = createSprite('assets/img/bomb-bonus.gif');
     var speedBonus = createSprite('assets/img/speed-bonus.gif');
@@ -76,7 +76,7 @@ var FieldRender = function(config) {
      */
     this.render = function() {
         this.canvas.clearRect(0, 0, this.width * this.size, this.height * this.size);
-        this.canvas.fillStyle = "#333333";
+        this.canvas.fillStyle = "#336633";
         this.canvas.fillRect(0, 0, this.width * this.size, this.height * this.size);
 
 
