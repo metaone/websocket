@@ -7,14 +7,14 @@
  */
 
 $(document).ready(function() {
-
-    if (typeof window.config == 'undefined' || typeof window.config.socket == 'undefined') {
-        window.config = {socket: 'ws://127.0.0.0:8000'};
-    }
-
     // init socket
     var socket = new WebSocket(window.config.socket);
-    var bomberman = new Bomberman({socket: socket, size: 32, width: 15, height: 15}).init();
+    var bomberman = new Bomberman({
+        socket: socket,
+        size: window.config.size,
+        width: window.config.width,
+        height: window.config.height
+    }).init();
 
     socket.onopen = function() {
         $('#ratchet-success').removeClass('hide');

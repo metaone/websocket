@@ -113,7 +113,6 @@ class Bomberman implements MessageComponentInterface
                 break;
             case self::ACTION_CREATE:
                 $creator = $conn->Session->get(self::PARAM_NAME);
-                var_dump($response->params);
                 $this->_games[$creator] = array(
                     'player' => $conn,
                     'width' => $response->params->width,
