@@ -48,8 +48,10 @@ var PlayerRender = function(config) {
         }
         this.canvas.drawImage(
             this.image,
-            this.x * this.speed * this.size,
-            this.y * this.speed * this.size
+            this.x * this.speed * this.size + 3.5,
+            this.y * this.speed * this.size,
+            25,
+            32
         );
         return self;
     };

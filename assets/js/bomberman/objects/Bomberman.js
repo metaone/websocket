@@ -38,14 +38,14 @@ var Bomberman = function(config) {
 
     var firstPlayer = new PlayerRender({
         canvas: this.canvas,
-        sprite: 'assets/img/player.png',
+        sprite: 'assets/img/player1.png',
         initCallback: function(){}
     });
     var secondPlayer = new PlayerRender({
         canvas: this.canvas,
         x: this.width - 1,
         y: this.height - 1,
-        sprite: 'assets/img/monster.png',
+        sprite: 'assets/img/player2.png',
         initCallback: function(){}
     });
 
